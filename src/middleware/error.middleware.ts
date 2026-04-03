@@ -4,6 +4,15 @@ import { AppError } from "../lib/error.js";
 import { sendResponse } from "../lib/response.js";
 import { logger } from "../lib/logger.js";
 
+/**
+ * Global error handler middleware.
+ * Catches all errors passed via next(error) and returns the appropriate HTTP response.
+ *
+ * Handles the following error types:
+ * - AppError: returns the error's status and message
+ * - PrismaClientKnownRequestError: maps Prisma error codes to HTTP responses
+ * - Unknown errors: logs the error and returns 500
+ */
 export function errorHandler(err: unknown, _req: Request, res: Response, _next: NextFunction) {
   if (err instanceof AppError) {
     sendResponse(res, err.status, err.message);

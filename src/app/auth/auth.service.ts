@@ -3,6 +3,15 @@ import { prisma } from "../../lib/prisma.js";
 import { signToken } from "../../lib/jwt.js";
 import { AppError } from "../../lib/error.js";
 
+/**
+ * Registers a new user.
+ * Checks if the username is already taken, hashes the password, and saves the user to the database.
+ *
+ * @param username - The desired username
+ * @param password - The plain text password to be hashed
+ * @returns The created user's id and username
+ * @throws {AppError} 409 if the username is already taken
+ */
 export async function registerUser(username: string, password: string) {
   const existing = await prisma.user.findUnique({ where: { username } });
   if (existing) throw new AppError(409, "Username already taken");
@@ -12,16 +21,18 @@ export async function registerUser(username: string, password: string) {
     data: { username, password: hashed },
   });
 
-  const token = signToken({ id: user.id, username: user.username });
-
-  await prisma.user.update({
-    where: { id: user.id },
-    data: { token, lastLogin: new Date() },
-  });
-
-  return { user: { id: user.id, username: user.username }, token };
+  return { id: user.id, username: user.username };
 }
 
+/**
+ * Authenticates a user with username and password.
+ * Verifies the password, generates a JWT token, and updates the last login timestamp.
+ *
+ * @param username - The username to authenticate
+ * @param password - The plain text password to verify
+ * @returns The authenticated user's data and JWT token
+ * @throws {AppError} 401 if the username or password is incorrect
+ */
 export async function loginUser(username: string, password: string) {
   const user = await prisma.user.findUnique({ where: { username } });
   if (!user) throw new AppError(401, "Invalid credentials");
@@ -39,6 +50,11 @@ export async function loginUser(username: string, password: string) {
   return { user: { id: user.id, username: user.username }, token };
 }
 
+/**
+ * Logs out a user by clearing their token in the database.
+ *
+ * @param userId - The id of the user to log out
+ */
 export async function logoutUser(userId: string) {
   await prisma.user.update({
     where: { id: userId },
