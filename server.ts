@@ -15,7 +15,9 @@ async function startServer() {
       logger.info(`Environment: ${process.env.NODE_ENV}`);
     });
   } catch (error) {
-    logger.error(`Failed to start server: ${error instanceof Error ? error.message : String(error)}`);
+    logger.error(
+      `Failed to start server: ${error instanceof Error ? error.message : String(error)}`
+    );
     await prisma.$disconnect();
     process.exit(1);
   }
