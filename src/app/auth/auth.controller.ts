@@ -44,8 +44,9 @@ export async function login(req: Request, res: Response, next: NextFunction) {
   try {
     const { username, password } = parsed.data;
     const { user, token } = await loginUser(username, password);
+    const userData = { id: user.id, username: user.username, token: token };
     setCookie(res, token);
-    sendResponse(res, 200, "Login successful", "user", user);
+    sendResponse(res, 200, "Login successful", "user", userData);
   } catch (error) {
     next(error);
   }
