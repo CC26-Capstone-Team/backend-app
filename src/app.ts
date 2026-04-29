@@ -19,10 +19,10 @@ app.use(
     credentials: true,
   })
 );
-app.use(requestLogger);
 app.use(helmet());
 app.use(cookieParser());
 app.use(express.json());
+app.use(requestLogger);
 
 app.get("/", (_req: Request, res: Response) => {
   sendResponse(res, 200, STATUS.SUCCESS, "Backend Capstone API is Healthy! 🚀");
