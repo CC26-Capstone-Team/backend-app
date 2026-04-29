@@ -20,8 +20,8 @@ export async function register(req: Request, res: Response, next: NextFunction) 
   }
 
   try {
-    const { username, password } = parsed.data;
-    const user = await registerUser(username, password);
+    const { email, password } = parsed.data;
+    const user = await registerUser(email, password);
     sendResponse(res, 201, "Register successful", "user", user);
   } catch (error) {
     next(error);
@@ -42,8 +42,8 @@ export async function login(req: Request, res: Response, next: NextFunction) {
   }
 
   try {
-    const { username, password } = parsed.data;
-    const { user, token } = await loginUser(username, password);
+    const { email, password } = parsed.data;
+    const { user, token } = await loginUser(email, password);
     const userData = { id: user.id, username: user.username, token: token };
     setCookie(res, token);
     sendResponse(res, 200, "Login successful", "user", userData);

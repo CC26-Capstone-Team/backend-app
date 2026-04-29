@@ -12,12 +12,14 @@ datasource db {
   provider = "postgresql"
 }
 
-model User {
+model user {
   id        String    @id @default(uuid())
-  username  String    @unique
+  email     String @unique
   password  String
+  google_id String? @unique
   token     String?
-  lastLogin DateTime?
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  avatar_url String?
+  last_login DateTime?
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
 }

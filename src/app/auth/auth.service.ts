@@ -12,16 +12,16 @@ import { AppError } from "../../lib/error.js";
  * @returns The created user's id and username
  * @throws {AppError} 409 if the username is already taken
  */
-export async function registerUser(username: string, password: string) {
-  const existing = await prisma.user.findUnique({ where: { username } });
+export async function registerUser(email: string, password: string) {
+  const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) throw new AppError(409, "Username already taken");
 
   const hashed = await bcrypt.hash(password, 10);
   const user = await prisma.user.create({
-    data: { username, password: hashed },
+    data: { email, password: hashed },
   });
 
-  return { id: user.id, username: user.username };
+  return { id: user.id, username: user.email };
 }
 
 /**
@@ -33,21 +33,21 @@ export async function registerUser(username: string, password: string) {
  * @returns The authenticated user's data and JWT token
  * @throws {AppError} 401 if the username or password is incorrect
  */
-export async function loginUser(username: string, password: string) {
-  const user = await prisma.user.findUnique({ where: { username } });
+export async function loginUser(email: string, password: string) {
+  const user = await prisma.user.findUnique({ where: { email } });
   if (!user) throw new AppError(401, "Invalid credentials");
 
   const valid = await bcrypt.compare(password, user.password);
   if (!valid) throw new AppError(401, "Invalid credentials");
 
-  const token = signToken({ id: user.id, username: user.username });
+  const token = signToken({ id: user.id, username: user.email });
 
   await prisma.user.update({
     where: { id: user.id },
     data: { token, lastLogin: new Date() },
   });
 
-  return { user: { id: user.id, username: user.username }, token };
+  return { user: { id: user.id, username: user.email }, token };
 }
 
 /**
