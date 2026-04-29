@@ -7,7 +7,7 @@ import { AppError } from "../../lib/error.js";
  * Registers a new user.
  * Checks if the username is already taken, hashes the password, and saves the user to the database.
  *
- * @param username - The desired username
+ * @param email - The desired email
  * @param password - The plain text password to be hashed
  * @returns The created user's id and username
  * @throws {AppError} 409 if the username is already taken
@@ -21,14 +21,14 @@ export async function registerUser(email: string, password: string) {
     data: { email, password: hashed },
   });
 
-  return { id: user.id, username: user.email };
+  return { id: user.id, email: user.email };
 }
 
 /**
  * Authenticates a user with username and password.
  * Verifies the password, generates a JWT token, and updates the last login timestamp.
  *
- * @param username - The username to authenticate
+ * @param email - The email to authenticate
  * @param password - The plain text password to verify
  * @returns The authenticated user's data and JWT token
  * @throws {AppError} 401 if the username or password is incorrect
@@ -44,10 +44,10 @@ export async function loginUser(email: string, password: string) {
 
   await prisma.user.update({
     where: { id: user.id },
-    data: { token, lastLogin: new Date() },
+    data: { token, last_login: new Date() },
   });
 
-  return { user: { id: user.id, username: user.email }, token };
+  return { user: { id: user.id, email: user.email }, token };
 }
 
 /**

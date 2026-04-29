@@ -22,11 +22,13 @@ import type { Response } from "express";
 export function sendResponse<T>(
   res: Response,
   status: number,
+  statusText: string,
   message: string,
   fieldName?: string,
   data?: T
 ) {
   res.status(status).json({
+    status: statusText,
     message,
     ...(fieldName && data !== undefined ? { [fieldName]: data } : {}),
   });

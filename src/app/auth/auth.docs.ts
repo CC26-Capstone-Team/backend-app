@@ -8,7 +8,12 @@ export const authPaths: ZodOpenApiPathsObject = {
       summary: "Registrasi user baru",
       requestBody: {
         required: true,
-        content: { "application/json": { schema: registerSchema } },
+        content: {
+          "application/json": {
+            schema: registerSchema,
+            example: { email: "user@example.com", password: "secret123" },
+          },
+        },
       },
       responses: {
         201: { description: "Register successful" },
@@ -23,7 +28,12 @@ export const authPaths: ZodOpenApiPathsObject = {
       summary: "Login user",
       requestBody: {
         required: true,
-        content: { "application/json": { schema: loginSchema } },
+        content: {
+          "application/json": {
+            schema: loginSchema,
+            example: { email: "user@example.com", password: "secret123" },
+          },
+        },
       },
       responses: {
         200: { description: "Login successful" },
