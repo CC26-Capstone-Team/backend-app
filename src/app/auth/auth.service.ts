@@ -24,6 +24,21 @@ export async function registerUser(email: string, password: string) {
   return { id: user.id, email: user.email };
 }
 
+export async function registerWithGoogle(googleId: string, email: string, avatarUrl?: string) {
+  const existing = await prisma.user.findUnique({ where: { google_id: googleId } });
+  if (existing) throw new AppError(409, "Email already registered");
+
+  const user = await prisma.user.create({
+    data: {
+      google_id: googleId,
+      email,
+      avatar_url: avatarUrl ?? null,
+    },
+  });
+
+  return { id: user.id, email: user.email };
+}
+
 /**
  * Authenticates a user with username and password.
  * Verifies the password, generates a JWT token, and updates the last login timestamp.
@@ -36,6 +51,7 @@ export async function registerUser(email: string, password: string) {
 export async function loginUser(email: string, password: string) {
   const user = await prisma.user.findUnique({ where: { email } });
   if (!user) throw new AppError(401, "Invalid credentials");
+  if (!user.password) throw new AppError(400, "Please login with Google");
 
   const valid = await bcrypt.compare(password, user.password);
   if (!valid) throw new AppError(401, "Invalid credentials");
@@ -48,6 +64,20 @@ export async function loginUser(email: string, password: string) {
   });
 
   return { user: { id: user.id, email: user.email }, token };
+}
+
+export async function loginWithGoogle(googleId: string) {
+  const user = await prisma.user.findUnique({ where: { google_id: googleId } });
+  if (!user) throw new AppError(401, "Google account not registered");
+
+  const token = signToken({ id: user.id });
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { token, last_login: new Date() },
+  });
+
+  return {user: {id: user.id, email: user.email}, token}
 }
 
 /**
