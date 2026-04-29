@@ -3,6 +3,7 @@ import { PrismaClientKnownRequestError } from "../generated/prisma/internal/pris
 import { AppError } from "../lib/error.js";
 import { sendResponse } from "../lib/response.js";
 import { logger } from "../lib/logger.js";
+import { STATUS } from "../lib/constant.js";
 
 /**
  * Global error handler middleware.
@@ -15,7 +16,7 @@ import { logger } from "../lib/logger.js";
  */
 export function errorHandler(err: unknown, _req: Request, res: Response, _next: NextFunction) {
   if (err instanceof AppError) {
-    sendResponse(res, err.status, err.message);
+    sendResponse(res, err.status, STATUS.INTERNAL_SERVER_ERROR, err.message);
     return;
   }
 
@@ -24,23 +25,23 @@ export function errorHandler(err: unknown, _req: Request, res: Response, _next: 
 
     switch (err.code) {
       case "P2002":
-        sendResponse(res, 409, "Data already exists");
+        sendResponse(res, 409, STATUS.CONFLICT, "Data already exists");
         return;
       case "P2025":
-        sendResponse(res, 404, "Data not found");
+        sendResponse(res, 404, STATUS.NOT_FOUND, "Data not found");
         return;
       case "P2003":
-        sendResponse(res, 400, "Invalid relation");
+        sendResponse(res, 400, STATUS.BAD_REQUEST, "Invalid relation");
         return;
       case "P2011":
-        sendResponse(res, 400, "Required field is missing");
+        sendResponse(res, 400, STATUS.BAD_REQUEST, "Required field is missing");
         return;
       default:
-        sendResponse(res, 400, "Database error");
+        sendResponse(res, 400, STATUS.BAD_REQUEST, "Database error");
         return;
     }
   }
 
   logger.error(err instanceof Error ? err.message : String(err));
-  sendResponse(res, 500, "Internal server error");
+  sendResponse(res, 500, STATUS.INTERNAL_SERVER_ERROR, "Internal server error");
 }

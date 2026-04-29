@@ -9,6 +9,7 @@ import { errorHandler } from "./middleware/error.middleware.js";
 import { notFoundHandler } from "./middleware/notfound.middleware.js";
 import { requestLogger } from "./middleware/logger.middleware.js";
 import { setupSwagger } from "./lib/swagger.js";
+import { STATUS } from "./lib/constant.js";
 
 const app: Application = express();
 
@@ -24,7 +25,7 @@ app.use(cookieParser());
 app.use(express.json());
 
 app.get("/", (_req: Request, res: Response) => {
-  sendResponse(res, 200, "Backend Capstone API is Healthy! 🚀");
+  sendResponse(res, 200, STATUS.SUCCESS, "Backend Capstone API is Healthy! 🚀");
 });
 
 app.use("/api", routes);
