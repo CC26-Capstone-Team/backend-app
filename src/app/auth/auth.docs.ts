@@ -1,5 +1,6 @@
 import type { ZodOpenApiPathsObject } from "zod-openapi";
-import { registerSchema, loginSchema } from "./auth.schema.js";
+import { registerSchema, loginSchema, googleAuthSchema } from "./auth.schema.js";
+import z from "zod";
 
 export const authPaths: ZodOpenApiPathsObject = {
   "/api/auth/register": {
@@ -22,6 +23,29 @@ export const authPaths: ZodOpenApiPathsObject = {
       },
     },
   },
+  "/api/auth/register/google": {
+    post: {
+      tags: ["Auth"],
+      summary: "Registrasi user dengan Google",
+      requestBody: {
+        required: true,
+        content: {
+          "application/json": {
+            schema: googleAuthSchema,
+            example: {
+              googleId: "1234567890",
+              email: "user@gmail.com",
+              avatarUrl: "https://example.com/avatar.jpg",
+            },
+          },
+        },
+      },
+      responses: {
+        201: { description: "Register successful" },
+        409: { description: "Google account already registered" },
+      },
+    },
+  },
   "/api/auth/login": {
     post: {
       tags: ["Auth"],
@@ -39,6 +63,25 @@ export const authPaths: ZodOpenApiPathsObject = {
         200: { description: "Login successful" },
         400: { description: "Invalid input" },
         401: { description: "Invalid credentials" },
+      },
+    },
+  },
+  "/api/auth/login/google": {
+    post: {
+      tags: ["Auth"],
+      summary: "Login dengan Google",
+      requestBody: {
+        required: true,
+        content: {
+          "application/json": {
+            schema: z.object({ googleId: z.string() }),
+            example: { googleId: "1234567890" },
+          },
+        },
+      },
+      responses: {
+        200: { description: "Login successful" },
+        401: { description: "Google account not registered" },
       },
     },
   },
