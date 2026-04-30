@@ -22,6 +22,7 @@ model user {
   last_login DateTime?
   created_at DateTime  @default(now())
   updated_at DateTime  @updatedAt
+  is_onboarded Boolean @default(false)
 
   profile                user_profile?
   skills                 user_skill[]
@@ -32,7 +33,7 @@ model user_profile {
   id         String   @id @default(uuid())
   user_id    String   @unique
   major      String
-  gp         Decimal  @db.Decimal(3, 2)
+  gpa         Decimal  @db.Decimal(3, 2)
   updated_at DateTime @updatedAt
 
   user user @relation(fields: [user_id], references: [id])

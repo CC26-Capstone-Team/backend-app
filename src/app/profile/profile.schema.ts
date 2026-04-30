@@ -1,0 +1,11 @@
+import z from "zod";
+
+export const createUserProfileSchema = z.object({
+  major: z.string().min(2).max(100),
+  gpa: z.number().min(0.0).max(4.0),
+});
+
+export const updateUserProfileSchema = z.object({
+  major: z.string().min(2).max(100).optional(),
+  gpa: z.number().min(0.0).max(4.0).optional(),
+});
