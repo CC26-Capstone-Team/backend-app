@@ -3,6 +3,7 @@ import swaggerUi from "swagger-ui-express";
 import type { Application } from "express";
 import { authPaths } from "../app/auth/auth.docs.js";
 import { logger } from "./logger.js";
+import { userProfilePaths } from "../app/profile/profile.docs.js";
 
 const PORT = process.env.PORT ?? 5000;
 
@@ -20,6 +21,7 @@ const document = createDocument({
   },
   paths: {
     ...authPaths,
+    ...userProfilePaths,
   },
 });
 
