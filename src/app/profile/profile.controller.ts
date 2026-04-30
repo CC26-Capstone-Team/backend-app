@@ -21,7 +21,11 @@ export async function createUserProfile(req: Request, res: Response, next: NextF
 
   const parsed = createUserProfileSchema.safeParse(req.body);
   if (!parsed.success) {
-    next(new AppError(400, parsed.error.issues[0]?.message ?? "Invalid input"));
+    const errors = parsed.error.issues.map((issue) => ({
+      field: issue.path.join("."),
+      message: issue.message,
+    }));
+    next(new AppError(400, "Invalid input", errors));
     return;
   }
 
@@ -38,7 +42,11 @@ export async function updateUserProfile(req: Request, res: Response, next: NextF
   const userId = req.user!.id;
   const parsed = updateUserProfileSchema.safeParse(req.body);
   if (!parsed.success) {
-    next(new AppError(400, parsed.error.issues[0]?.message ?? "Invalid input"));
+    const errors = parsed.error.issues.map((issue) => ({
+      field: issue.path.join("."),
+      message: issue.message,
+    }));
+    next(new AppError(400, "Invalid input", errors));
     return;
   }
 

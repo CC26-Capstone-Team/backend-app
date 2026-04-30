@@ -25,11 +25,13 @@ export function sendResponse<T>(
   statusText: string,
   message: string,
   fieldName?: string,
-  data?: T
+  data?: T,
+  errors?: { field: string; message: string }[]
 ) {
   res.status(status).json({
     status: statusText,
     message,
     ...(fieldName && data !== undefined ? { [fieldName]: data } : {}),
+    ...(errors ? { errors } : {}),
   });
 }
