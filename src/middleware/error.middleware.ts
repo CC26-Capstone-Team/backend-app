@@ -28,7 +28,7 @@ export function errorHandler(err: unknown, _req: Request, res: Response, _next: 
               : err.status === 409
                 ? STATUS.CONFLICT
                 : STATUS.FAIL;
-    sendResponse(res, err.status, statusText, err.message);
+    sendResponse(res, err.status, statusText, err.message, undefined, undefined, err.errors);
     return;
   }
 
