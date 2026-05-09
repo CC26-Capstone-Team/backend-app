@@ -2,6 +2,7 @@ import bcrypt from "bcrypt";
 import { prisma } from "../../lib/prisma.js";
 import { signToken } from "../../lib/jwt.js";
 import { AppError } from "../../lib/error.js";
+import { isOnboarded } from "./auth.helper.js";
 
 /**
  * Registers a new user.
@@ -21,7 +22,14 @@ export async function registerUser(email: string, password: string) {
     data: { email, password: hashed },
   });
 
-  return { id: user.id, email: user.email };
+  const token = signToken({ id: user.id, email: user.email });
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { token, last_login: new Date() },
+  });
+
+  return { user: { id: user.id, email: user.email, is_onboarded: false }, token };
 }
 
 export async function registerWithGoogle(googleId: string, email: string, avatarUrl?: string) {
@@ -56,28 +64,32 @@ export async function loginUser(email: string, password: string) {
   const valid = await bcrypt.compare(password, user.password);
   if (!valid) throw new AppError(401, "Invalid credentials");
 
-  const token = signToken({ id: user.id, username: user.email });
+  const token = signToken({ id: user.id, email: user.email });
 
   await prisma.user.update({
     where: { id: user.id },
     data: { token, last_login: new Date() },
   });
 
-  return { user: { id: user.id, email: user.email }, token };
+  const onboarded = await isOnboarded(user.id);
+
+  return { user: { id: user.id, email: user.email, is_onboarded: onboarded }, token };
 }
 
 export async function loginWithGoogle(googleId: string) {
   const user = await prisma.user.findUnique({ where: { google_id: googleId } });
   if (!user) throw new AppError(401, "Google account not registered");
 
-  const token = signToken({ id: user.id });
+  const token = signToken({ id: user.id, email: user.email });
 
   await prisma.user.update({
     where: { id: user.id },
     data: { token, last_login: new Date() },
   });
 
-  return {user: {id: user.id, email: user.email}, token}
+  const onboarded = await isOnboarded(user.id);
+
+  return { user: { id: user.id, email: user.email, is_onboarded: onboarded }, token };
 }
 
 /**
