@@ -1,5 +1,11 @@
 import type { Request, Response, NextFunction } from "express";
-import { registerUser, loginUser, logoutUser, registerWithGoogle, loginWithGoogle } from "./auth.service.js";
+import {
+  registerUser,
+  loginUser,
+  logoutUser,
+  registerWithGoogle,
+  loginWithGoogle,
+} from "./auth.service.js";
 import { registerSchema, loginSchema } from "./auth.schema.js";
 import { sendResponse } from "../../lib/response.js";
 import { verifyToken } from "../../lib/jwt.js";
@@ -22,8 +28,9 @@ export async function register(req: Request, res: Response, next: NextFunction) 
 
   try {
     const { email, password } = parsed.data;
-    const user = await registerUser(email, password);
-    sendResponse(res, 201, STATUS.SUCCESS, "Register successful", "user", user);
+    const { user, token } = await registerUser(email, password);
+    setCookie(res, token);
+    sendResponse(res, 201, STATUS.SUCCESS, "Register successful", "user", { ...user, token });
   } catch (error) {
     next(error);
   }

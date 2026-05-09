@@ -2,8 +2,10 @@ import { createDocument } from "zod-openapi";
 import swaggerUi from "swagger-ui-express";
 import type { Application } from "express";
 import { authPaths } from "../app/auth/auth.docs.js";
-import { logger } from "./logger.js";
 import { userProfilePaths } from "../app/profile/profile.docs.js";
+import { skillPaths } from "../app/skill/skill.docs.js";
+import { onboardingPaths } from "../app/onboarding/onboarding.docs.js";
+import { logger } from "./logger.js";
 
 const PORT = process.env.PORT ?? 5000;
 
@@ -22,6 +24,8 @@ const document = createDocument({
   paths: {
     ...authPaths,
     ...userProfilePaths,
+    ...skillPaths,
+    ...onboardingPaths,
   },
 });
 
