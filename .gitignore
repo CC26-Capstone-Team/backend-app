@@ -1,6 +1,7 @@
 # Dependencies
 node_modules/
-docs/
+docs/mockup
+docs/*.md
 
 # Environment
 .env

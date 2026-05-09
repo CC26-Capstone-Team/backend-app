@@ -1,0 +1,61 @@
+//////////////////////////////////////////////////////
+// USERS
+//////////////////////////////////////////////////////
+
+Table user {
+  id text [pk]
+  email text [unique, not null]
+  password text [null]
+  google_id text [unique]
+  avatar_url text
+  token text
+  last_login timestamp
+  created_at timestamp [default: `CURRENT_TIMESTAMP`, not null]
+  updated_at timestamp [not null]
+}
+
+Table user_profile {
+  id text [pk]
+  user_id text [ref: - user.id, unique, not null]
+  education_level text [not null, note: 'e.g. SMA, D3, S1, S2, S3']
+  major text [not null, note: 'jurusan/prodi, e.g. Teknik Informatika']
+  gpa decimal(3,2)
+  updated_at timestamp [not null]
+}
+
+Table skill {
+  id text [pk]
+  name text [unique, not null]
+}
+
+Table user_skill {
+  user_id text [ref: > user.id]
+  skill_id text [ref: > skill.id]
+
+  indexes {
+    (user_id, skill_id) [pk]
+  }
+}
+
+//////////////////////////////////////////////////////
+// CAREER
+//////////////////////////////////////////////////////
+
+Table career {
+  id text [pk]
+  title text [unique, not null, note: 'e.g. Data Analyst, Backend Developer']
+  description text
+  industry text
+}
+
+//////////////////////////////////////////////////////
+// RECOMMENDATION
+//////////////////////////////////////////////////////
+
+Table recommendation_history {
+  id text [pk]
+  user_id text [ref: > user.id]
+  career_id text [ref: > career.id]
+  match_score decimal(5,2) [note: 'confidence score dari model ML, 0-100']
+  created_at timestamp [default: `CURRENT_TIMESTAMP`]
+}
