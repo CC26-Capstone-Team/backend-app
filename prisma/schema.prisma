@@ -14,7 +14,7 @@ datasource db {
 
 model user {
   id         String    @id @default(uuid())
-  email      String?   @unique
+  email      String    @unique
   password   String?
   google_id  String?   @unique
   token      String?
@@ -22,7 +22,6 @@ model user {
   last_login DateTime?
   created_at DateTime  @default(now())
   updated_at DateTime  @updatedAt
-  is_onboarded Boolean @default(false)
 
   profile                user_profile?
   skills                 user_skill[]
@@ -30,11 +29,12 @@ model user {
 }
 
 model user_profile {
-  id         String   @id @default(uuid())
-  user_id    String   @unique
-  major      String
-  gpa         Decimal  @db.Decimal(3, 2)
-  updated_at DateTime @updatedAt
+  id              String   @id @default(uuid())
+  user_id         String   @unique
+  education_level String
+  major           String
+  gpa             Decimal? @db.Decimal(3, 2)
+  updated_at      DateTime @updatedAt
 
   user user @relation(fields: [user_id], references: [id])
 }
@@ -42,19 +42,16 @@ model user_profile {
 model skill {
   id   String @id @default(uuid())
   name String @unique
-  type String
 
-  user_skills          user_skill[]
-  career_requirements  career_requirement[]
+  user_skills user_skill[]
 }
 
 model career {
   id          String  @id @default(uuid())
-  title       String
+  title       String  @unique
   description String?
   industry    String?
 
-  requirements           career_requirement[]
   recommendation_history recommendation_history[]
 }
 
@@ -66,17 +63,6 @@ model user_skill {
   skill skill @relation(fields: [skill_id], references: [id])
 
   @@id([user_id, skill_id])
-}
-
-model career_requirement {
-  career_id String
-  skill_id  String
-  min_gpa   Decimal? @db.Decimal(3, 2)
-
-  career career @relation(fields: [career_id], references: [id])
-  skill  skill  @relation(fields: [skill_id], references: [id])
-
-  @@id([career_id, skill_id])
 }
 
 model recommendation_history {
