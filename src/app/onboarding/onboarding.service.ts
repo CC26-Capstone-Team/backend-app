@@ -5,7 +5,7 @@ export async function submitOnboarding(
   userId: string,
   education_level: string,
   major: string,
-  gpa: number,
+  gpa: number | undefined,
   skill_ids: string[]
 ) {
   const existingProfile = await prisma.user_profile.findUnique({ where: { user_id: userId } });
@@ -24,7 +24,7 @@ export async function submitOnboarding(
         user_id: userId,
         education_level,
         major,
-        gpa,
+        gpa: gpa ?? null,
       },
     }),
     prisma.user_skill.createMany({

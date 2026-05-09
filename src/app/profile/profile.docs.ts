@@ -4,6 +4,7 @@ import { createUserProfileSchema, updateUserProfileSchema } from "./profile.sche
 const profileExample = {
   id: "cm9x1y2z3a4b5c6d7e8f9g0h",
   user_id: "cm9x1y2z3a4b5c6d7e8f9g0h",
+  education_level: "S1",
   major: "Informatika",
   gpa: 3.75,
   updated_at: "2026-04-29T00:00:00.000Z",
@@ -44,7 +45,7 @@ export const userProfilePaths: ZodOpenApiPathsObject = {
         content: {
           "application/json": {
             schema: createUserProfileSchema,
-            example: { major: "Informatika", gpa: 3.75 },
+            example: { education_level: "S1", major: "Informatika", gpa: 3.75 },
           },
         },
       },
@@ -78,7 +79,7 @@ export const userProfilePaths: ZodOpenApiPathsObject = {
         content: {
           "application/json": {
             schema: updateUserProfileSchema,
-            example: { gpa: 3.8 },
+            example: { education_level: "S1", gpa: 3.8 },
           },
         },
       },
