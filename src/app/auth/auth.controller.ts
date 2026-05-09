@@ -6,7 +6,6 @@ import {
   registerWithGoogle,
   loginWithGoogle,
 } from "./auth.service.js";
-import { registerSchema, loginSchema } from "./auth.schema.js";
 import { sendResponse } from "../../lib/response.js";
 import { verifyToken } from "../../lib/jwt.js";
 import { AppError } from "../../lib/error.js";
@@ -20,14 +19,9 @@ import { STATUS } from "../../lib/constant.js";
  * @route POST /api/auth/register
  */
 export async function register(req: Request, res: Response, next: NextFunction) {
-  const parsed = registerSchema.safeParse(req.body);
-  if (!parsed.success) {
-    next(new AppError(400, parsed.error.issues[0]?.message ?? "Invalid input"));
-    return;
-  }
+  const { email, password } = req.body;
 
   try {
-    const { email, password } = parsed.data;
     const { user, token } = await registerUser(email, password);
     setCookie(res, token);
     sendResponse(res, 201, STATUS.SUCCESS, "Register successful", "user", { ...user, token });
@@ -54,14 +48,9 @@ export async function registerGoogle(req: Request, res: Response, next: NextFunc
  * @route POST /api/auth/login
  */
 export async function login(req: Request, res: Response, next: NextFunction) {
-  const parsed = loginSchema.safeParse(req.body);
-  if (!parsed.success) {
-    next(new AppError(400, parsed.error.issues[0]?.message ?? "Invalid input"));
-    return;
-  }
+  const { email, password } = req.body;
 
   try {
-    const { email, password } = parsed.data;
     const { user, token } = await loginUser(email, password);
     const userData = { id: user.id, email: user.email, token: token };
     setCookie(res, token);

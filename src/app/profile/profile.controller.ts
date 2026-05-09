@@ -2,8 +2,6 @@ import type { Request, Response, NextFunction } from "express";
 import { addUserProfile, editUserProfile, userProfile } from "./profile.service.js";
 import { sendResponse } from "../../lib/response.js";
 import { STATUS } from "../../lib/constant.js";
-import { createUserProfileSchema, updateUserProfileSchema } from "./profile.schema.js";
-import { AppError } from "../../lib/error.js";
 
 export async function getUserProfile(req: Request, res: Response, next: NextFunction) {
   const userId = req.user!.id;
@@ -19,19 +17,10 @@ export async function getUserProfile(req: Request, res: Response, next: NextFunc
 export async function createUserProfile(req: Request, res: Response, next: NextFunction) {
   const userId = req.user!.id;
 
-  const parsed = createUserProfileSchema.safeParse(req.body);
-  if (!parsed.success) {
-    const errors = parsed.error.issues.map((issue) => ({
-      field: issue.path.join("."),
-      message: issue.message,
-    }));
-    next(new AppError(400, "Invalid input", errors));
-    return;
-  }
+  const { education_level, major, gpa } = req.body;
 
   try {
-    const { major, gpa } = parsed.data;
-    const profile = await addUserProfile(userId, major, gpa);
+    const profile = await addUserProfile(userId, education_level, major, gpa);
     sendResponse(res, 201, STATUS.SUCCESS, "Profile Created", "profile", profile);
   } catch (error) {
     next(error);
@@ -40,19 +29,11 @@ export async function createUserProfile(req: Request, res: Response, next: NextF
 
 export async function updateUserProfile(req: Request, res: Response, next: NextFunction) {
   const userId = req.user!.id;
-  const parsed = updateUserProfileSchema.safeParse(req.body);
-  if (!parsed.success) {
-    const errors = parsed.error.issues.map((issue) => ({
-      field: issue.path.join("."),
-      message: issue.message,
-    }));
-    next(new AppError(400, "Invalid input", errors));
-    return;
-  }
+
+  const { education_level, major, gpa } = req.body;
 
   try {
-    const { major, gpa } = parsed.data;
-    const profile = await editUserProfile(userId, major, gpa);
+    const profile = await editUserProfile(userId, education_level, major, gpa);
     sendResponse(res, 200, STATUS.SUCCESS, "Profile Updated", "profile", profile);
   } catch (error) {
     next(error);
