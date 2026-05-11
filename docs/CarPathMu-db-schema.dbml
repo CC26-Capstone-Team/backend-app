@@ -59,3 +59,16 @@ Table recommendation_history {
   match_score decimal(5,2) [note: 'confidence score dari model ML, 0-100']
   created_at timestamp [default: `CURRENT_TIMESTAMP`]
 }
+
+//////////////////////////////////////////////////////
+// CAREER SKILL
+//////////////////////////////////////////////////////
+
+Table career_skill {
+  career_id text [ref: > career.id]
+  skill_id text [ref: > skill.id]
+
+  indexes {
+    (career_id, skill_id) [pk]
+  }
+}
