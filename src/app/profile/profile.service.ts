@@ -2,13 +2,17 @@ import { AppError } from "../../lib/error.js";
 import { prisma } from "../../lib/prisma.js";
 
 export async function userProfile(userId: string) {
-  const profile = await prisma.user_profile.findUnique({
-    where: { user_id: userId },
-  });
+  const [profile, skills] = await Promise.all([
+    prisma.user_profile.findUnique({ where: { user_id: userId } }),
+    prisma.user_skill.findMany({
+      where: { user_id: userId },
+      select: { skill: true },
+    }),
+  ]);
 
   if (!profile) throw new AppError(404, "Profile not found");
 
-  return profile;
+  return { ...profile, skills: skills.map((us) => us.skill) };
 }
 
 export async function addUserProfile(
@@ -53,4 +57,31 @@ export async function editUserProfile(
   });
 
   return profile;
+}
+
+export async function editUserSkill(user_id: string, skill_ids: string[]) {
+  const existingSkills = await prisma.skill.findMany({
+    where: { id: { in: skill_ids } },
+    select: { id: true },
+  });
+
+  if (existingSkills.length !== skill_ids.length) {
+    throw new AppError(400, "One or more skill IDs are invalid");
+  }
+
+  await prisma.$transaction([
+    prisma.user_skill.deleteMany({ where: { user_id } }),
+    prisma.user_skill.createMany({
+      data: skill_ids.map((skill_id) => ({ user_id, skill_id })),
+    }),
+  ]);
+
+  const userSkill = (
+    await prisma.user_skill.findMany({
+      where: { user_id },
+      select: { skill: true },
+    })
+  ).map((us) => us.skill);
+
+  return userSkill;
 }
