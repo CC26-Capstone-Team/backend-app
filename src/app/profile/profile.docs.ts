@@ -1,5 +1,6 @@
 import type { ZodOpenApiPathsObject } from "zod-openapi";
 import { createUserProfileSchema, updateUserProfileSchema } from "./profile.schema.js";
+import z from "zod";
 
 const profileExample = {
   id: "cm9x1y2z3a4b5c6d7e8f9g0h",
@@ -106,6 +107,34 @@ export const userProfilePaths: ZodOpenApiPathsObject = {
             },
           },
         },
+      },
+    },
+  },
+  "/api/user/profile/skill": {
+    put: {
+      tags: ["User Profile"],
+      summary: "Update skill user",
+      security: [{ cookieAuth: [] }],
+      requestBody: {
+        required: true,
+        content: {
+          "application/json": {
+            schema: z.object({ skill_ids: z.array(z.string()) }),
+            example: { skill_ids: ["skill1", "skill2"] },
+          },
+        },
+      },
+      responses: {
+        200: {
+          description: "Skills updated",
+          content: {
+            "application/json": {
+              example: { status: "success", message: "Skills updated" },
+            },
+          },
+        },
+        400: { description: "Invalid input" },
+        401: { description: "Unauthorized" },
       },
     },
   },
