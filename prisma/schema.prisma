@@ -44,6 +44,7 @@ model skill {
   name String @unique
 
   user_skills user_skill[]
+  career_skills career_skill[]
 }
 
 model career {
@@ -53,6 +54,7 @@ model career {
   industry    String?
 
   recommendation_history recommendation_history[]
+  career_skills career_skill[]
 }
 
 model user_skill {
@@ -74,4 +76,14 @@ model recommendation_history {
 
   user   user   @relation(fields: [user_id], references: [id])
   career career @relation(fields: [career_id], references: [id])
+}
+
+model career_skill {
+  career_id String
+  skill_id String
+
+  career  career @relation(fields: [career_id], references: [id])
+  skill   skill  @relation(fields: [skill_id], references: [id])
+
+  @@id([career_id, skill_id])
 }
