@@ -1,7 +1,5 @@
 # Backend App
 
-> ⚠️ **Catatan:** Ini masih dalam tahap starter/boilerplate. Belum siap untuk production.
-
 ## Tech Stack
 
 - **Runtime:** Node.js
@@ -9,9 +7,10 @@
 - **Language:** TypeScript
 - **Database:** PostgreSQL
 - **ORM:** Prisma v7
-- **Auth:** JWT + bcrypt
+- **Auth:** JWT + bcrypt + Google OAuth
 - **Validation:** Zod v4
 - **Logger:** Winston
+- **API Docs:** Swagger UI (zod-openapi)
 - **Linter:** ESLint + typescript-eslint
 - **Formatter:** Prettier
 
@@ -87,36 +86,20 @@ pnpm start
 ```
 src/
 ├── app/
-│   └── auth/
-│       ├── auth.controller.ts
-│       ├── auth.routes.ts
-│       ├── auth.schema.ts
-│       └── auth.service.ts
+│   ├── auth/
+│   ├── onboarding/
+│   ├── profile/
+│   ├── skill/
+│   └── route.ts
 ├── database/
 │   ├── migrations/
 │   └── seeders/
-│       └── seed.ts
 ├── lib/
-│   ├── error.ts
-│   ├── express.d.ts
-│   ├── jwt.ts
-│   ├── logger.ts
-│   ├── prisma.ts
-│   └── response.ts
 ├── middleware/
-│   ├── auth.middleware.ts
-│   ├── error.middleware.ts
-│   └── notfound.middleware.ts
 └── app.ts
 server.ts
 ```
 
 ## API Endpoints
 
-### Auth
-
-| Method | Endpoint | Deskripsi | Auth |
-|---|---|---|---|
-| POST | `/api/auth/register` | Register user baru | ❌ |
-| POST | `/api/auth/login` | Login user | ❌ |
-| POST | `/api/auth/logout` | Logout user | ✅ |
+Dokumentasi interaktif tersedia di `/api-docs` saat server berjalan.
