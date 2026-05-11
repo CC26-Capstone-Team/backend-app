@@ -23,9 +23,9 @@ model user {
   created_at DateTime  @default(now())
   updated_at DateTime  @updatedAt
 
-  profile                user_profile?
-  skills                 user_skill[]
-  recommendation_history recommendation_history[]
+  profile                 user_profile?
+  skills                  user_skill[]
+  recommendation_sessions recommendation_session[]
 }
 
 model user_profile {
@@ -67,15 +67,23 @@ model user_skill {
   @@id([user_id, skill_id])
 }
 
+model recommendation_session {
+  id         String   @id @default(uuid())
+  user_id    String
+  created_at DateTime @default(now())
+
+  user    user                     @relation(fields: [user_id], references: [id])
+  results recommendation_history[]
+}
+
 model recommendation_history {
   id          String   @id @default(uuid())
-  user_id     String
+  session_id  String
   career_id   String
   match_score Decimal? @db.Decimal(5, 2)
-  created_at  DateTime @default(now())
 
-  user   user   @relation(fields: [user_id], references: [id])
-  career career @relation(fields: [career_id], references: [id])
+  session recommendation_session @relation(fields: [session_id], references: [id])
+  career  career                 @relation(fields: [career_id], references: [id])
 }
 
 model career_skill {
