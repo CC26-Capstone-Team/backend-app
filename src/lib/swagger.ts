@@ -6,6 +6,7 @@ import { userProfilePaths } from "../app/profile/profile.docs.js";
 import { skillPaths } from "../app/skill/skill.docs.js";
 import { onboardingPaths } from "../app/onboarding/onboarding.docs.js";
 import { logger } from "./logger.js";
+import { userRecommendationsPaths } from "../app/recommendation/recommendation.docs.js";
 
 const PORT = process.env.PORT ?? 5000;
 
@@ -26,6 +27,7 @@ const document = createDocument({
     ...userProfilePaths,
     ...skillPaths,
     ...onboardingPaths,
+    ...userRecommendationsPaths,
   },
 });
 
