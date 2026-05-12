@@ -6,7 +6,7 @@ export interface TokenPayload extends JwtPayload {
 }
 
 const JWT_SECRET = process.env.JWT_SECRET!;
-const JWT_EXPIRES_IN = "7d" as const;
+const JWT_EXPIRES_IN = (process.env.JWT_EXPIRES_IN ?? "7d") as SignOptions["expiresIn"] & string;
 
 /**
  * Signs a JWT token with the given payload.
