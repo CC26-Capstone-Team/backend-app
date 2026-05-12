@@ -73,7 +73,7 @@ model recommendation_session {
   created_at DateTime @default(now())
 
   user    user                     @relation(fields: [user_id], references: [id])
-  results recommendation_history[]
+  recommendation_history recommendation_history[]
 }
 
 model recommendation_history {

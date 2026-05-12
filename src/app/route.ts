@@ -3,6 +3,7 @@ import authRoutes from "./auth/auth.routes.js";
 import profileRoutes from "./profile/profile.routes.js";
 import skillRoutes from "./skill/skill.route.js";
 import onboardingRoutes from "./onboarding/onboarding.route.js";
+import recommendationsRoutes from "./recommendation/recommendation.route.js";
 
 const router: IRouter = Router();
 
@@ -10,5 +11,6 @@ router.use("/auth", authRoutes);
 router.use("/user", profileRoutes);
 router.use("/skills", skillRoutes);
 router.use("/onboarding", onboardingRoutes);
+router.use("/recommendations", recommendationsRoutes);
 
 export default router;
