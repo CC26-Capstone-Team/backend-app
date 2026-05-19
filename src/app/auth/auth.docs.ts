@@ -12,7 +12,7 @@ export const authPaths: ZodOpenApiPathsObject = {
         content: {
           "application/json": {
             schema: registerSchema,
-            example: { email: "user@example.com", password: "secret123" },
+            example: { name: "user", email: "user@example.com", password: "secret123" },
           },
         },
       },

@@ -19,10 +19,10 @@ import { STATUS } from "../../lib/constant.js";
  * @route POST /api/auth/register
  */
 export async function register(req: Request, res: Response, next: NextFunction) {
-  const { email, password } = req.body;
+  const { name, email, password } = req.body;
 
   try {
-    const { user, token } = await registerUser(email, password);
+    const { user, token } = await registerUser(name, email, password);
     setCookie(res, token);
     sendResponse(res, 201, STATUS.SUCCESS, "Register successful", "user", { ...user, token });
   } catch (error) {

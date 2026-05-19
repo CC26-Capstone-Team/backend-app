@@ -4,11 +4,22 @@ import z from "zod";
 
 const profileExample = {
   id: "cm9x1y2z3a4b5c6d7e8f9g0h",
+  username: "user",
   user_id: "cm9x1y2z3a4b5c6d7e8f9g0h",
   education_level: "S1",
   major: "Informatika",
   gpa: 3.75,
   updated_at: "2026-04-29T00:00:00.000Z",
+  skillss: [
+    {
+      id: "lakjsgoi",
+      name: "typescript",
+    },
+    {
+      id: "laksdjflo",
+      name: "tailwind",
+    },
+  ],
 };
 
 export const userProfilePaths: ZodOpenApiPathsObject = {

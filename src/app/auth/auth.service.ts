@@ -13,16 +13,16 @@ import { isOnboarded } from "./auth.helper.js";
  * @returns The created user's id and username
  * @throws {AppError} 409 if the username is already taken
  */
-export async function registerUser(email: string, password: string) {
+export async function registerUser(username: string, email: string, password: string) {
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) throw new AppError(409, "Username already taken");
 
   const hashed = await bcrypt.hash(password, 10);
   const user = await prisma.user.create({
-    data: { email, password: hashed },
+    data: { username: username, email, password: hashed },
   });
 
-  const token = signToken({ id: user.id, email: user.email });
+  const token = signToken({ id: user.id, email: user.email, username: user.username });
 
   await prisma.user.update({
     where: { id: user.id },
@@ -36,10 +36,14 @@ export async function registerWithGoogle(googleId: string, email: string, avatar
   const existing = await prisma.user.findUnique({ where: { google_id: googleId } });
   if (existing) throw new AppError(409, "Email already registered");
 
+  const baseUsername = email.split("@")[0];
+  const username = `${baseUsername}_${Math.random().toString(36).slice(2, 7)}`;
+
   const user = await prisma.user.create({
     data: {
       google_id: googleId,
       email,
+      username: username,
       avatar_url: avatarUrl ?? null,
     },
   });
