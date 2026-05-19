@@ -2,17 +2,31 @@ import { AppError } from "../../lib/error.js";
 import { prisma } from "../../lib/prisma.js";
 
 export async function userProfile(userId: string) {
-  const [profile, skills] = await Promise.all([
-    prisma.user_profile.findUnique({ where: { user_id: userId } }),
-    prisma.user_skill.findMany({
-      where: { user_id: userId },
-      select: { skill: true },
-    }),
-  ]);
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      id: true,
+      email: true,
+      username: true,
+      avatar_url: true,
+      profile: true,
+      skills: {
+        select: {
+          skill: true,
+        },
+      },
+    },
+  });
 
-  if (!profile) throw new AppError(404, "Profile not found");
+  if (!user) {
+    throw new AppError(404, "User not found");
+  }
 
-  return { ...profile, skills: skills.map((us) => us.skill) };
+  const { skills, ...rest } = user;
+  return {
+    ...rest,
+    skills: skills.map((us) => us.skill),
+  };
 }
 
 export async function addUserProfile(
