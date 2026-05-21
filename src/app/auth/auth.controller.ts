@@ -52,7 +52,12 @@ export async function login(req: Request, res: Response, next: NextFunction) {
 
   try {
     const { user, token } = await loginUser(email, password);
-    const userData = { id: user.id, email: user.email, token: token };
+    const userData = {
+      id: user.id,
+      email: user.email,
+      token: token,
+      is_onboarded: user.is_onboarded,
+    };
     setCookie(res, token);
     sendResponse(res, 200, STATUS.SUCCESS, "Login successful", "user", userData);
   } catch (error) {

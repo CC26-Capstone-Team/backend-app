@@ -1,11 +1,22 @@
 import type { ZodOpenApiPathsObject } from "zod-openapi";
 import { onboardingSchema } from "./onboarding.schema.js";
+import z from "zod";
 
 const onboardingExample = {
   education_level: "S1",
   major: "Informatika",
   gpa: 3.75,
   skill_ids: ["uuid-1", "uuid-2"],
+};
+
+const successResponseSchema = z.object({
+  status: z.string(),
+  message: z.string(),
+});
+
+const successResponseExample = {
+  status: "success",
+  message: "Onboarding submitted",
 };
 
 export const onboardingPaths: ZodOpenApiPathsObject = {
@@ -24,7 +35,15 @@ export const onboardingPaths: ZodOpenApiPathsObject = {
         },
       },
       responses: {
-        201: { description: "Onboarding completed" },
+        201: {
+          description: "Onboarding completed",
+          content: {
+            "application/json": {
+              schema: successResponseSchema,
+              example: successResponseExample,
+            },
+          },
+        },
         400: { description: "Invalid input / One or more skills are invalid" },
         401: { description: "Unauthorized" },
         409: { description: "Onboarding already completed" },
@@ -46,7 +65,15 @@ export const onboardingPaths: ZodOpenApiPathsObject = {
         },
       },
       responses: {
-        201: { description: "Onboarding completed" },
+        201: {
+          description: "Onboarding completed",
+          content: {
+            "application/json": {
+              schema: successResponseSchema,
+              example: successResponseExample,
+            },
+          },
+        },
         400: { description: "Invalid input / One or more skills are invalid" },
         401: { description: "Unauthorized" },
         409: { description: "Onboarding already completed" },

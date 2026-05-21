@@ -22,6 +22,25 @@ export async function userRecommendations(userId: string) {
   }));
 }
 
+export async function latestUserRecommendation(userId: string) {
+  const data = await prisma.recommendation_session.findFirst({
+    where: { user_id: userId },
+    include: {
+      recommendation_history: {
+        include: { career: true },
+      },
+    },
+    orderBy: { created_at: "desc" },
+  });
+
+  if (!data) {
+    throw new AppError(404, "No recommendation found");
+  }
+
+  const { recommendation_history, ...session } = data;
+  return { ...session, recommendation_history };
+}
+
 export async function userRecommendationBySessionId(sessionId: string) {
   const data = await prisma.recommendation_session.findUnique({
     where: { id: sessionId },
