@@ -22,6 +22,17 @@ const profileExample = {
   ],
 };
 
+const skillExample = [
+  {
+    id: "lakjsgoi",
+    name: "typescript",
+  },
+  {
+    id: "laksdjflo",
+    name: "tailwind",
+  },
+];
+
 export const userProfilePaths: ZodOpenApiPathsObject = {
   "/api/user/profile": {
     get: {
@@ -122,6 +133,30 @@ export const userProfilePaths: ZodOpenApiPathsObject = {
     },
   },
   "/api/user/profile/skill": {
+    get: {
+      tags: ["User Profile"],
+      summary: "Ambil skill user",
+      security: [{ cookieAuth: [] }],
+      responses: {
+        200: {
+          description: "User Skill retrieved",
+          content: {
+            "application/json": {
+              example: { status: "success", message: "User skill retrieved", skills: skillExample },
+            },
+          },
+        },
+        401: { description: "Unauthorized" },
+        404: {
+          description: "User skill not found",
+          content: {
+            "application/json": {
+              example: { status: "error", message: "User skill not found" },
+            },
+          },
+        },
+      },
+    },
     put: {
       tags: ["User Profile"],
       summary: "Update skill user",

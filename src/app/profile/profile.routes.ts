@@ -2,6 +2,7 @@ import { Router, type IRouter } from "express";
 import {
   createUserProfile,
   getUserProfile,
+  getUserSkill,
   updateUserProfile,
   updateUserSkill,
 } from "./profile.controller.js";
@@ -16,6 +17,7 @@ import {
 const router: IRouter = Router();
 
 router.get("/profile", authMiddleware, getUserProfile);
+router.get('/profile/skill', authMiddleware, getUserSkill);
 router.post("/profile", authMiddleware, validateBody(createUserProfileSchema), createUserProfile);
 router.put("/profile", authMiddleware, validateBody(updateUserProfileSchema), updateUserProfile);
 router.put("/profile/skill", authMiddleware, validateBody(updateUserSkillSchema), updateUserSkill);

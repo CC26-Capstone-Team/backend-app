@@ -29,6 +29,15 @@ export async function userProfile(userId: string) {
   };
 }
 
+export async function getUserSkillProfile(userId: string) {
+  const skills = await prisma.user_skill.findMany({
+    where: { user_id: userId },
+    select: { skill: true },
+  });
+
+  return { skills: skills.map((us) => us.skill) };
+}
+
 export async function addUserProfile(
   userId: string,
   education_level: string,

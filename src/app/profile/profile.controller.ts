@@ -1,5 +1,11 @@
 import type { Request, Response, NextFunction } from "express";
-import { addUserProfile, editUserProfile, editUserSkill, userProfile } from "./profile.service.js";
+import {
+  addUserProfile,
+  editUserProfile,
+  editUserSkill,
+  getUserSkillProfile,
+  userProfile,
+} from "./profile.service.js";
 import { sendResponse } from "../../lib/response.js";
 import { STATUS } from "../../lib/constant.js";
 
@@ -9,6 +15,17 @@ export async function getUserProfile(req: Request, res: Response, next: NextFunc
   try {
     const profile = await userProfile(userId);
     sendResponse(res, 200, STATUS.SUCCESS, "Profile Retrieved", "profile", profile);
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function getUserSkill(req: Request, res: Response, next: NextFunction) {
+  const userId = req.user!.id;
+
+  try {
+    const skill = await getUserSkillProfile(userId);
+    sendResponse(res, 200, STATUS.SUCCESS, "User Skill Retrieved", "skills", skill);
   } catch (error) {
     next(error);
   }
