@@ -27,6 +27,7 @@ model user {
   profile                 user_profile?
   skills                  user_skill[]
   recommendation_sessions recommendation_session[]
+  course_recommendation   course_recommendation[]
 }
 
 model user_profile {
@@ -56,6 +57,7 @@ model career {
 
   recommendation_history recommendation_history[]
   career_skills career_skill[]
+  course_recommendations  course_recommendation[]
 }
 
 model user_skill {
@@ -95,4 +97,27 @@ model career_skill {
   skill   skill  @relation(fields: [skill_id], references: [id])
 
   @@id([career_id, skill_id])
+}
+
+model course_recommendation {
+  id          String @id @default(uuid())
+  user_id     String
+  career_id      String
+  analysis    String  @db.Text
+  created_at  DateTime @default(now())
+
+  user        user    @relation(fields: [user_id], references: [id])
+  courses     course_item[]
+  career      career  @relation(fields: [career_id], references: [id])
+}
+
+model course_item {
+  id                        String @id  @default(uuid())
+  course_recommendation_id  String
+  topic                     String
+  platform                  String
+  reason                    String @db.Text
+  level                     String
+
+  recommendation course_recommendation  @relation(fields: [course_recommendation_id], references: [id], onDelete: Cascade)
 }
