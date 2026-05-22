@@ -78,4 +78,84 @@ export const userRecommendationsPaths: ZodOpenApiPathsObject = {
       },
     },
   },
+  "/api/recommendations/course": {
+    post: {
+      tags: ["Recommendations"],
+      summary: "Generate rekomendasi kursus berbasis AI berdasarkan target karir",
+      security: [{ cookieAuth: [] }],
+      requestBody: {
+        required: true,
+        content: {
+          "application/json": {
+            schema: {
+              type: "object",
+              properties: {
+                target_career: {
+                  type: "string",
+                  example: "Backend Developer",
+                  description: "Karir spesifik yang ingin dituju oleh user",
+                },
+              },
+              required: ["target_career"],
+            },
+          },
+        },
+      },
+      responses: {
+        200: {
+          description: "Course recommendations generated successfully",
+          content: {
+            "application/json": {
+              example: {
+                status: "success",
+                message: "Generated Course Recommendation",
+                course_recommendation: {
+                  analysis:
+                    "Anda memiliki dasar yang kuat dalam Python dan JavaScript, yang merupakan kombinasi serbaguna untuk berbagai peran teknologi...",
+                  courses: [
+                    {
+                      topic: "Pengembangan Aplikasi Web Frontend Lanjutan dengan React.js",
+                      platform: "Coursera, Udemy",
+                      reason:
+                        "Mengembangkan kemampuan JavaScript Anda ke tingkat profesional dalam membangun antarmuka pengguna...",
+                      level: "Lanjutan",
+                    },
+                    {
+                      topic: "Membangun API Skalabel dengan Django REST Framework atau FastAPI",
+                      platform: "Udemy, Pluralsight",
+                      reason:
+                        "Memanfaatkan keahlian Python Anda untuk merancang dan mengimplementasikan backend API yang kuat dan skalabel...",
+                      level: "Lanjutan",
+                    },
+                  ],
+                },
+              },
+            },
+          },
+        },
+        400: {
+          description: "Bad Request - Input target_career tidak valid atau hilang",
+        },
+        401: {
+          description: "Unauthorized - User belum login",
+        },
+        503: {
+          description: "Service Unavailable - Server AI sedang sibuk, coba beberapa saat lagi",
+          content: {
+            "application/json": {
+              example: {
+                status: "error",
+                message: "AI Service Unavailable",
+                description:
+                  "Maaf, layanan AI sedang tidak tersedia saat ini. Silakan coba lagi nanti.",
+              },
+            },
+          },
+        },
+        500: {
+          description: "Internal Server Error",
+        },
+      },
+    },
+  },
 };
