@@ -149,6 +149,7 @@ model job_item {
   apply_link              String? @db.Text
   match_score             Int?
   match_reason            String?
+  posted_at               String?
 
   recommendation          job_recommendation @relation(fields: [job_recommendation_id], references: [id], onDelete: Cascade)
 }
