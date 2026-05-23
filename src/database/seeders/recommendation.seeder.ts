@@ -1,14 +1,16 @@
 import { prisma } from "../../lib/prisma.js";
 
 export async function seedRecommendation() {
-  const user = await prisma.user.findFirst({ select: { id: true } });
-  if (!user) throw new Error("No user found for seeding");
+  const users = await prisma.user.findMany({ select: { id: true } });
+  if (!users.length) throw new Error("No users found for seeding");
 
   const careers = await prisma.career.findMany({ select: { id: true }, take: 5 });
   const careers2 = await prisma.career.findMany({ select: { id: true }, take: 5, skip: 5 });
 
-  const sessionAll = await Promise.all([
-    prisma.recommendation_session.create({
+  let totalSessions = 0;
+
+  for (const user of users) {
+    await prisma.recommendation_session.create({
       data: {
         user_id: user.id,
         recommendation_history: {
@@ -20,9 +22,9 @@ export async function seedRecommendation() {
           },
         },
       },
-    }),
+    });
 
-    prisma.recommendation_session.create({
+    await prisma.recommendation_session.create({
       data: {
         user_id: user.id,
         recommendation_history: {
@@ -34,8 +36,10 @@ export async function seedRecommendation() {
           },
         },
       },
-    }),
-  ]);
+    });
 
-  console.log(`✅ Recommendation seeded: ${sessionAll.length} sessions`);
+    totalSessions += 2;
+  }
+
+  console.log(`✅ Recommendation seeded: ${totalSessions} sessions for ${users.length} users`);
 }
