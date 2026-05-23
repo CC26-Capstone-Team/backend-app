@@ -1,6 +1,7 @@
 import type { Request, Response, NextFunction } from "express";
 import {
   generateCourseRecommendation,
+  generateJobRecommendation,
   latestUserRecommendation,
   userRecommendationBySessionId,
   userRecommendations,
@@ -72,10 +73,10 @@ export async function getUserRecommendationBySessionId(
 
 export async function getCourseRecommendation(req: Request, res: Response, next: NextFunction) {
   const userId = req.user!.id;
-  const { target_career } = req.body;
+  const targetCareer = req.params.target_career as string;
 
   try {
-    const recommendationData = await generateCourseRecommendation(userId, target_career);
+    const recommendationData = await generateCourseRecommendation(userId, targetCareer);
 
     sendResponse(
       res,
@@ -94,6 +95,69 @@ export async function getCourseRecommendation(req: Request, res: Response, next:
         "AI Service Unavailable",
         "description",
         "Maaf, layanan AI sedang tidak tersedia saat ini. Silakan coba lagi nanti."
+      );
+    }
+
+    next(error);
+  }
+}
+
+export async function getJobsRecommndation(req: Request, res: Response, next: NextFunction) {
+  const userId = req.user!.id;
+  const targetCareer = req.params.target_career as string;
+
+  if (!targetCareer) {
+    return sendResponse(
+      res,
+      400,
+      STATUS.ERROR,
+      "Target karir di URL tidak boleh kosong.",
+      "job_recommendation",
+      null
+    );
+  }
+
+  try {
+    const recommendationData = await generateJobRecommendation(userId, targetCareer);
+
+    sendResponse(
+      res,
+      200,
+      STATUS.SUCCESS,
+      "Generated job recommendation",
+      "job_recommendation",
+      recommendationData
+    );
+  } catch (error: any) {
+    // 1. Tangkap Error Khusus AI (Gemini 503 / Overloaded / Unavailable)
+    if (
+      error.status === 503 ||
+      error.message?.includes("503") ||
+      error.message?.toLowerCase().includes("unavailable") ||
+      error.message?.toLowerCase().includes("overloaded")
+    ) {
+      return sendResponse(res, 503, STATUS.ERROR, "Layanan AI sedang sibuk", "job_recommendation", {
+        analysis:
+          "Maaf, layanan AI sedang tidak tersedia saat ini karena tingginya lalu lintas server. Silakan coba beberapa saat lagi.",
+        jobs: [], // Sangat penting: Kirim array kosong agar frontend (Next.js) tidak error saat menjalankan .map()
+      });
+    }
+
+    // 2. Tangkap Error Khusus SerpApi (misalnya limit habis atau tidak ada hasil)
+    if (
+      error.message?.includes("SerpApi") ||
+      error.message?.includes("lowongan kerja baru yang ditemukan")
+    ) {
+      return sendResponse(
+        res,
+        404, // Not Found
+        STATUS.ERROR,
+        error.message,
+        "job_recommendation",
+        {
+          analysis: "Tidak dapat menemukan data lowongan terbaru dari sumber kami.",
+          jobs: [],
+        }
       );
     }
 

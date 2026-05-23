@@ -24,3 +24,33 @@ export const AIResponseSchema: Schema = {
   },
   required: ["analysis", "courses"], // Pastikan nama di sini sinkron
 };
+
+export const AIJobResponseSchema: Schema = {
+  type: Type.OBJECT,
+  properties: {
+    analysis: {
+      type: Type.STRING,
+      description: "Analisis umum mengenai peluang karir user berdasarkan skill yang dimiliki.",
+    },
+    jobs: {
+      type: Type.ARRAY,
+      description: "Daftar lowongan beserta hasil analisis kecocokan AI.",
+      items: {
+        type: Type.OBJECT,
+        properties: {
+          title: { type: Type.STRING },
+          company_name: { type: Type.STRING },
+          location: { type: Type.STRING },
+          via: { type: Type.STRING },
+          match_score: { type: Type.INTEGER, description: "Skor kecocokan 1 sampai 100" },
+          match_reason: {
+            type: Type.STRING,
+            description: "Alasan mengapa user cocok atau apa yang kurang",
+          },
+        },
+        required: ["title", "company_name", "location", "via", "match_score", "match_reason"],
+      },
+    },
+  },
+  required: ["analysis", "jobs"],
+};

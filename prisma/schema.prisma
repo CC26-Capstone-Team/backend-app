@@ -28,6 +28,7 @@ model user {
   skills                  user_skill[]
   recommendation_sessions recommendation_session[]
   course_recommendation   course_recommendation[]
+  job_recommendation      job_recommendation[]
 }
 
 model user_profile {
@@ -58,7 +59,7 @@ model career {
   recommendation_history recommendation_history[]
   career_skills career_skill[]
   course_recommendations  course_recommendation[]
-  job_openings job_opening[]
+  job_recommendation      job_recommendation[]
 }
 
 model user_skill {
@@ -123,16 +124,31 @@ model course_item {
   recommendation course_recommendation  @relation(fields: [course_recommendation_id], references: [id], onDelete: Cascade)
 }
 
-model job_opening {
-  id          String   @id @default(uuid())
-  career_id   String
-  company     String
-  role        String
-  location    String
-  type        String
-  salary      String?
-  posted_at   DateTime @default(now())
+model job_recommendation {
+  id              String    @id @default(uuid())
+  user_id         String
+  career_id       String
+  analysis        String    @db.Text
+  last_fetched_at DateTime  @default(now())
+  created_at      DateTime  @default(now())
+  updated_at      DateTime  @updatedAt
 
-  career      career   @relation(fields: [career_id], references: [id], onDelete: Cascade)
+  user            user      @relation(fields: [user_id], references: [id])
+  career          career    @relation(fields: [career_id], references: [id])
+  jobs            job_item[]
 }
 
+model job_item {
+  id                      String @id @default(uuid())
+  job_recommendation_id   String
+  title                   String
+  company_name            String
+  location                String
+  via                     String
+  description             String @db.Text
+  apply_link              String? @db.Text
+  match_score             Int?
+  match_reason            String?
+
+  recommendation          job_recommendation @relation(fields: [job_recommendation_id], references: [id], onDelete: Cascade)
+}
