@@ -7,6 +7,7 @@ import { seedUsers } from "./user.seeder.js";
 import { seedUserProfile } from "./user-profile.seeder.js";
 import { seedUserSkills } from "./user-skill.seeder.js";
 import { careerSkillSeeder } from "./career-skill.seeder.js";
+import { seedJobOpenings } from "./job.seeder.js";
 
 async function main() {
   await seedUsers();
