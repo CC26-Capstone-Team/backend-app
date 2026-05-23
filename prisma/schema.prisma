@@ -58,6 +58,7 @@ model career {
   recommendation_history recommendation_history[]
   career_skills career_skill[]
   course_recommendations  course_recommendation[]
+  job_openings job_opening[]
 }
 
 model user_skill {
@@ -121,3 +122,17 @@ model course_item {
 
   recommendation course_recommendation  @relation(fields: [course_recommendation_id], references: [id], onDelete: Cascade)
 }
+
+model job_opening {
+  id          String   @id @default(uuid())
+  career_id   String
+  company     String
+  role        String
+  location    String
+  type        String
+  salary      String?
+  posted_at   DateTime @default(now())
+
+  career      career   @relation(fields: [career_id], references: [id], onDelete: Cascade)
+}
+
