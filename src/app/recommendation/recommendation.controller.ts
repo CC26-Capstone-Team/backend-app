@@ -74,9 +74,10 @@ export async function getUserRecommendationBySessionId(
 export async function getCourseRecommendation(req: Request, res: Response, next: NextFunction) {
   const userId = req.user!.id;
   const targetCareer = req.params.target_career as string;
+  const forceRefresh = req.query.force === "true";
 
   try {
-    const recommendationData = await generateCourseRecommendation(userId, targetCareer);
+    const recommendationData = await generateCourseRecommendation(userId, targetCareer, forceRefresh);
 
     sendResponse(
       res,

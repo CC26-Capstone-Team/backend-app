@@ -106,7 +106,7 @@ export async function userRecommendationBySessionId(sessionId: string) {
   };
 }
 
-export async function generateCourseRecommendation(userId: string, targetCareer: string) {
+export async function generateCourseRecommendation(userId: string, targetCareer: string, forceRefresh: boolean = false) {
   const careerId = await prisma.career.findUnique({
     where: { title: targetCareer },
     select: { id: true },
@@ -127,7 +127,7 @@ export async function generateCourseRecommendation(userId: string, targetCareer:
     orderBy: { created_at: "desc" },
   });
 
-  if (existingRecommendation) {
+  if (existingRecommendation && !forceRefresh) {
     return existingRecommendation;
   }
 
@@ -156,25 +156,49 @@ export async function generateCourseRecommendation(userId: string, targetCareer:
 
   const parsedData = JSON.parse(response.text as string) as AIRecommendationResult;
 
-  const savedRecommendation = await prisma.course_recommendation.create({
-    data: {
-      user_id: userId,
-      career_id: careerId.id,
-      analysis: parsedData.analysis,
-      courses: {
-        create: parsedData.courses.map((course) => ({
-          topic: course.topic,
-          platform: course.platform,
-          reason: course.reason,
-          level: course.level,
-        })),
+  let savedRecommendation;
+
+  if (existingRecommendation) {
+    savedRecommendation = await prisma.course_recommendation.update({
+      where: { id: existingRecommendation.id },
+      data: {
+        analysis: parsedData.analysis,
+        courses: {
+          deleteMany: {},
+          create: parsedData.courses.map((course) => ({
+            topic: course.topic,
+            platform: course.platform,
+            reason: course.reason,
+            level: course.level,
+          })),
+        },
       },
-    },
-    include: {
-      courses: true,
-      career: true,
-    },
-  });
+      include: {
+        courses: true,
+        career: true,
+      },
+    });
+  } else {
+    savedRecommendation = await prisma.course_recommendation.create({
+      data: {
+        user_id: userId,
+        career_id: careerId.id,
+        analysis: parsedData.analysis,
+        courses: {
+          create: parsedData.courses.map((course) => ({
+            topic: course.topic,
+            platform: course.platform,
+            reason: course.reason,
+            level: course.level,
+          })),
+        },
+      },
+      include: {
+        courses: true,
+        career: true,
+      },
+    });
+  }
 
   return savedRecommendation;
 }
