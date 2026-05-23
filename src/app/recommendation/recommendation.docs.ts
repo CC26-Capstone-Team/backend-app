@@ -158,4 +158,101 @@ export const userRecommendationsPaths: ZodOpenApiPathsObject = {
       },
     },
   },
+  "/api/recommendations/jobs/{target_career}": {
+    get: {
+      tags: ["Recommendations"],
+      summary: "Ambil rekomendasi lowongan pekerjaan berbasis AI dengan cache",
+      security: [{ cookieAuth: [] }],
+      parameters: [
+        {
+          name: "target_career",
+          in: "path",
+          required: true,
+          description: "Target karir spesifik yang ingin dicari (contoh: Backend Developer)",
+          schema: {
+            type: "string",
+            example: "Backend Developer",
+          },
+        },
+      ],
+      responses: {
+        200: {
+          description: "Job recommendations retrieved successfully",
+          content: {
+            "application/json": {
+              example: {
+                status: "success",
+                message: "Berhasil memuat rekomendasi lowongan pekerjaan",
+                job_recommendation: {
+                  source: "api_refresh",
+                  analysis:
+                    "Skill Anda sangat relevan dengan kebutuhan industri saat ini, terutama pemahaman tentang pembuatan RESTful API dan database relasional.",
+                  jobs: [
+                    {
+                      title: "Backend Developer",
+                      company_name: "Tech Nusantara",
+                      location: "Jakarta, Indonesia",
+                      via: "via LinkedIn",
+                      match_score: 90,
+                      match_reason:
+                        "Anda memiliki skill Express.js dan PostgreSQL yang menjadi syarat utama di lowongan ini.",
+                    },
+                    {
+                      title: "Node.js Engineer (Remote)",
+                      company_name: "Global Tech Solutions",
+                      location: "Indonesia",
+                      via: "via Glints",
+                      match_score: 75,
+                      match_reason:
+                        "Skill dasar Anda cocok, namun Anda perlu memperdalam arsitektur Microservices untuk posisi ini.",
+                    },
+                  ],
+                },
+              },
+            },
+          },
+        },
+        400: {
+          description: "Bad Request - Parameter target_career kosong",
+        },
+        401: {
+          description: "Unauthorized - User belum login",
+        },
+        404: {
+          description: "Not Found - Tidak ada lowongan baru dari sumber data",
+          content: {
+            "application/json": {
+              example: {
+                status: "error",
+                message: "Tidak dapat menemukan data lowongan terbaru dari sumber kami.",
+                job_recommendation: {
+                  analysis: "Tidak dapat menemukan data lowongan terbaru dari sumber kami.",
+                  jobs: [],
+                },
+              },
+            },
+          },
+        },
+        503: {
+          description: "Service Unavailable - Server AI sedang sibuk",
+          content: {
+            "application/json": {
+              example: {
+                status: "error",
+                message: "Layanan AI sedang sibuk",
+                job_recommendation: {
+                  analysis:
+                    "Maaf, layanan AI sedang tidak tersedia saat ini karena tingginya lalu lintas server. Silakan coba beberapa saat lagi.",
+                  jobs: [],
+                },
+              },
+            },
+          },
+        },
+        500: {
+          description: "Internal Server Error",
+        },
+      },
+    },
+  },
 };
