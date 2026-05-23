@@ -1,8 +1,10 @@
 import { GoogleGenAI } from "@google/genai";
+import { getJson } from "serpapi";
 import { AppError } from "../../lib/error.js";
 import { prisma } from "../../lib/prisma.js";
 import type { AIRecommendationResult } from "./recommendation.types.js";
-import { AIResponseSchema } from "./recommendation.schema.js";
+import { AIJobResponseSchema, AIResponseSchema } from "./recommendation.schema.js";
+import { appendFileSync } from "node:fs";
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
 
@@ -141,4 +143,166 @@ export async function generateCourseRecommendation(userId: string, targetCareer:
   });
 
   return savedRecommendation;
+}
+
+async function fetchJobsFromSerpApi(targetCareer: string): Promise<any[]> {
+  return new Promise((resolve, reject) => {
+    getJson(
+      {
+        engine: "google_jobs",
+        q: `${targetCareer} in Indonesia`,
+        hl: "id",
+        gl: "id",
+        api_key: process.env.SERPAPI_API_KEY,
+      },
+      (json: any) => {
+        if (json.error) {
+          if (json.error.includes("Google hasn't returned any results")) {
+            resolve([]);
+          } else {
+            reject(new Error(json.error));
+          }
+        } else if (json.jobs_results) {
+          resolve(json.jobs_results.slice(0, 5));
+        } else {
+          resolve([]);
+        }
+      }
+    );
+  });
+}
+
+export async function generateJobRecommendation(userId: string, targetCareer: string) {
+  const careerData = await prisma.career.findUnique({
+    where: { title: targetCareer },
+    select: { id: true },
+  });
+
+  if (!careerData) {
+    throw new AppError(404, "Career not found");
+  }
+
+  const existingJobRec = await prisma.job_recommendation.findFirst({
+    where: {
+      user_id: userId,
+      career_id: careerData.id,
+    },
+    include: { jobs: true },
+  });
+
+  if (existingJobRec) {
+    const now = new Date();
+    const lastFeched = new Date(existingJobRec.last_fetched_at);
+    const diffInDays = (now.getTime() - lastFeched.getTime()) / (1000 * 60 * 60 * 24);
+
+    if (diffInDays < 2) {
+      return {
+        source: "cache",
+        ...existingJobRec,
+      };
+    }
+  }
+
+  const rawJobs = await fetchJobsFromSerpApi(targetCareer);
+
+  if (rawJobs.length === 0) {
+    throw new AppError(
+      404,
+      "Maaf, belum ada lowongan kerja baru yang ditemukan di SerpAPI saat ini."
+    );
+  }
+
+  const jobsDataForAI = rawJobs.map((job) => ({
+    title: job.title,
+    company_name: job.company_name,
+    location: job.location,
+    via: job.via,
+    description: job.description?.substring(0, 500),
+    apply_link: job.apply_options?.[0]?.link || "",
+  }));
+
+  const existingSkills = await prisma.user_skill.findMany({
+    where: { user_id: userId },
+    select: { skill: true },
+  });
+
+  const currentSkills =
+    existingSkills.length > 0
+      ? existingSkills.map((us) => us.skill.name).join(", ")
+      : "belum memiliki skill spesifik";
+
+  const prompt = `
+  Saya memiliki skill: ${currentSkills}. Target karir saya: ${targetCareer}.
+  Berikut adalah daftar pekerjaan dari Google Jobs:
+  ${JSON.stringify(jobsDataForAI)}
+  
+  Tugas:
+  1. Berikan analisis singkat tentang kecocokan profil saya dengan pasar kerja ini.
+  2. Hitung 'match_score' (1-100) untuk setiap pekerjaan berdasarkan skill saya.
+  3. Berikan 'match_reason' singkat untuk tiap pekerjaan (mengapa saya cocok atau skill apa yang kurang).
+  `;
+
+  const response = await ai.models.generateContent({
+    model: "gemini-2.5-flash",
+    contents: prompt,
+    config: {
+      responseMimeType: "application/json",
+      responseSchema: AIJobResponseSchema, // Gunakan schema baru
+      temperature: 0.1,
+    },
+  });
+
+  const parsedData = JSON.parse(response.text as string);
+
+  let savedRecommendation;
+
+  if (existingJobRec) {
+    savedRecommendation = await prisma.job_recommendation.update({
+      where: { id: existingJobRec.id },
+      data: {
+        analysis: parsedData.analysis,
+        last_fetched_at: new Date(), // Reset timer 2 hari
+        jobs: {
+          deleteMany: {}, // Hapus lowongan lama
+          create: parsedData.jobs.map((job: any, index: number) => ({
+            title: job.title,
+            company_name: job.company_name,
+            location: job.location,
+            via: job.via,
+            description: jobsDataForAI[index]?.description, // Kembalikan deskripsi asli dari SerpApi
+            apply_link: jobsDataForAI[index]?.apply_link, // Kembalikan link asli
+            match_score: job.match_score,
+            match_reason: job.match_reason,
+          })),
+        },
+      },
+      include: { jobs: true },
+    });
+  } else {
+    savedRecommendation = await prisma.job_recommendation.create({
+      data: {
+        user_id: userId,
+        career_id: careerData.id,
+        analysis: parsedData.analysis,
+        jobs: {
+          create: parsedData.jobs.map((job: any, index: number) => ({
+            title: job.title,
+            company_name: job.company_name,
+            location: job.location,
+            via: job.via,
+            description: jobsDataForAI[index]?.description,
+            apply_link: jobsDataForAI[index]?.apply_link,
+            match_score: job.match_score,
+            match_reason: job.match_reason,
+          })),
+        },
+      },
+      include: { jobs: true },
+    });
+  }
+
+  return {
+    source: "api_refresh",
+    ...savedRecommendation,
+  };
 }
