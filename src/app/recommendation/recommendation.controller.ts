@@ -105,6 +105,7 @@ export async function getCourseRecommendation(req: Request, res: Response, next:
 export async function getJobsRecommndation(req: Request, res: Response, next: NextFunction) {
   const userId = req.user!.id;
   const targetCareer = req.params.target_career as string;
+  const forceRefresh = req.query.force === "true";
 
   if (!targetCareer) {
     return sendResponse(
@@ -118,7 +119,7 @@ export async function getJobsRecommndation(req: Request, res: Response, next: Ne
   }
 
   try {
-    const recommendationData = await generateJobRecommendation(userId, targetCareer);
+    const recommendationData = await generateJobRecommendation(userId, targetCareer, forceRefresh);
 
     sendResponse(
       res,
