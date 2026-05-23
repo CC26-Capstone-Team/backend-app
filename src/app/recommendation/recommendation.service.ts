@@ -61,7 +61,7 @@ export async function latestUserRecommendation(userId: string) {
   const formattedHistory = recommendation_history.map((history) => {
     // Destructure untuk mengambil career_skills agar bisa dikeluarkan dari objek utama
     const { career_skills, ...restCareer } = history.career;
-    
+
     return {
       ...history,
       career: {
@@ -76,9 +76,9 @@ export async function latestUserRecommendation(userId: string) {
   });
 
   // 4. Gabungkan kembali session dengan history yang sudah diformat
-  return { 
-    ...session, 
-    recommendation_history: formattedHistory 
+  return {
+    ...session,
+    recommendation_history: formattedHistory,
   };
 }
 
@@ -253,6 +253,7 @@ export async function generateJobRecommendation(userId: string, targetCareer: st
     via: job.via,
     description: job.description?.substring(0, 500),
     apply_link: job.apply_options?.[0]?.link || "",
+    posted_at: job.detected_extensions?.posted_at || null,
   }));
 
   const existingSkills = await prisma.user_skill.findMany({
@@ -305,6 +306,7 @@ export async function generateJobRecommendation(userId: string, targetCareer: st
             via: job.via,
             description: jobsDataForAI[index]?.description, // Kembalikan deskripsi asli dari SerpApi
             apply_link: jobsDataForAI[index]?.apply_link, // Kembalikan link asli
+            posted_at: jobsDataForAI[index]?.posted_at,
             match_score: job.match_score,
             match_reason: job.match_reason,
           })),
