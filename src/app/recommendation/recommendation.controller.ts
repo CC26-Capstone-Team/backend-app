@@ -88,15 +88,23 @@ export async function getCourseRecommendation(req: Request, res: Response, next:
       recommendationData
     );
   } catch (error: any) {
-    if (error.status === 503 || error.message.includes("503")) {
+    if (
+      error.status === 503 ||
+      error.status === 429 ||
+      error.status === "RESOURCE_EXHAUSTED" ||
+      error.message?.includes("503") ||
+      error.message?.toLowerCase().includes("quota") ||
+      error.message?.toLowerCase().includes("unavailable")
+    ) {
       sendResponse(
         res,
         503,
         STATUS.ERROR,
         "AI Service Unavailable",
         "description",
-        "Maaf, layanan AI sedang tidak tersedia saat ini. Silakan coba lagi nanti."
+        "Maaf, layanan AI sedang tidak tersedia atau kuota habis. Silakan coba beberapa saat lagi."
       );
+      return;
     }
 
     next(error);
@@ -131,10 +139,13 @@ export async function getJobsRecommndation(req: Request, res: Response, next: Ne
       recommendationData
     );
   } catch (error: any) {
-    // 1. Tangkap Error Khusus AI (Gemini 503 / Overloaded / Unavailable)
+    // 1. Tangkap Error Khusus AI (Gemini 503 / 429 / Overloaded / Unavailable)
     if (
       error.status === 503 ||
+      error.status === 429 ||
+      error.status === "RESOURCE_EXHAUSTED" ||
       error.message?.includes("503") ||
+      error.message?.toLowerCase().includes("quota") ||
       error.message?.toLowerCase().includes("unavailable") ||
       error.message?.toLowerCase().includes("overloaded")
     ) {
