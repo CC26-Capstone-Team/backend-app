@@ -4,7 +4,6 @@ import { AppError } from "../../lib/error.js";
 import { prisma } from "../../lib/prisma.js";
 import type { AIRecommendationResult } from "./recommendation.types.js";
 import { AIJobResponseSchema, AIResponseSchema } from "./recommendation.schema.js";
-import { appendFileSync } from "node:fs";
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
 
@@ -30,11 +29,22 @@ export async function userRecommendations(userId: string) {
 }
 
 export async function latestUserRecommendation(userId: string) {
+  // 1. Pengambilan data (Query Prisma tetap sama)
   const data = await prisma.recommendation_session.findFirst({
     where: { user_id: userId },
     include: {
       recommendation_history: {
-        include: { career: true },
+        include: {
+          career: {
+            include: {
+              career_skills: {
+                include: {
+                  skill: true,
+                },
+              },
+            },
+          },
+        },
       },
     },
     orderBy: { created_at: "desc" },
@@ -44,8 +54,32 @@ export async function latestUserRecommendation(userId: string) {
     throw new AppError(404, "No recommendation found");
   }
 
+  // 2. Pisahkan recommendation_history dari data session
   const { recommendation_history, ...session } = data;
-  return { ...session, recommendation_history };
+
+  // 3. Petakan (map) history untuk meratakan struktur datanya
+  const formattedHistory = recommendation_history.map((history) => {
+    // Destructure untuk mengambil career_skills agar bisa dikeluarkan dari objek utama
+    const { career_skills, ...restCareer } = history.career;
+    
+    return {
+      ...history,
+      career: {
+        ...restCareer,
+        // Buat key baru bernama 'skills' yang isinya list id & name
+        skills: career_skills.map((cs) => ({
+          id: cs.skill.id,
+          name: cs.skill.name,
+        })),
+      },
+    };
+  });
+
+  // 4. Gabungkan kembali session dengan history yang sudah diformat
+  return { 
+    ...session, 
+    recommendation_history: formattedHistory 
+  };
 }
 
 export async function userRecommendationBySessionId(sessionId: string) {
