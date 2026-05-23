@@ -106,5 +106,14 @@ export async function editUserSkill(user_id: string, skill_ids: string[]) {
     })
   ).map((us) => us.skill);
 
+  await prisma.$transaction([
+    prisma.course_recommendation.deleteMany({
+      where: { user_id },
+    }),
+    prisma.job_recommendation.deleteMany({
+      where: { user_id },
+    }),
+  ]);
+
   return userSkill;
 }

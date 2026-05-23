@@ -17,7 +17,7 @@ export async function seedCareer() {
     "DevOps Engineer",
     "Quantitative Analyst",
     "HR Manager",
-    "Operation Manager",
+    "Operations Manager",
     "Financial Analyst",
     "Marketing Manager",
     "Product Manager",
