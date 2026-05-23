@@ -24,35 +24,35 @@ const DUMMY_JOBS = [
   },
 ];
 
-export async function seedJobOpenings() {
-  const careers = await prisma.career.findMany();
-  
-  if (!careers.length) {
-    console.log("⚠️ No careers found. Skipping job seeding.");
-    return;
-  }
+// export async function seedJobOpenings() {
+//   const careers = await prisma.career.findMany();
 
-  // Bersihkan data lama
-  await prisma.job_opening.deleteMany({});
+//   if (!careers.length) {
+//     console.log("⚠️ No careers found. Skipping job seeding.");
+//     return;
+//   }
 
-  let jobCount = 0;
+//   // Bersihkan data lama
+//   await prisma.job_opening.deleteMany({});
 
-  // Buat 3 lowongan untuk setiap karir
-  for (const career of careers) {
-    for (const job of DUMMY_JOBS) {
-      await prisma.job_opening.create({
-        data: {
-          career_id: career.id,
-          company: job.company,
-          role: job.rolePrefix ? `${job.rolePrefix} ${career.title}` : career.title,
-          location: job.location,
-          type: job.type,
-          salary: job.salary,
-        },
-      });
-      jobCount++;
-    }
-  }
+//   let jobCount = 0;
 
-  console.log(`✅ Job openings seeded: ${jobCount} jobs for ${careers.length} careers`);
-}
+//   // Buat 3 lowongan untuk setiap karir
+//   for (const career of careers) {
+//     for (const job of DUMMY_JOBS) {
+//       await prisma.job_opening.create({
+//         data: {
+//           career_id: career.id,
+//           company: job.company,
+//           role: job.rolePrefix ? `${job.rolePrefix} ${career.title}` : career.title,
+//           location: job.location,
+//           type: job.type,
+//           salary: job.salary,
+//         },
+//       });
+//       jobCount++;
+//     }
+//   }
+
+//   console.log(`✅ Job openings seeded: ${jobCount} jobs for ${careers.length} careers`);
+// }
