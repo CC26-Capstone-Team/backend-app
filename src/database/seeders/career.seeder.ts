@@ -24,10 +24,21 @@ export async function seedCareer() {
     "Business Analyst",
   ];
 
-  await prisma.career.createMany({
-    data: career.map((career) => ({ title: career })),
-    skipDuplicates: true,
-  });
+export async function seedCareer() {
+  for (const career of CAREERS) {
+    await prisma.career.upsert({
+      where: { title: career.title },
+      update: {
+        description: career.description,
+        industry: career.industry,
+      },
+      create: {
+        title: career.title,
+        description: career.description,
+        industry: career.industry,
+      },
+    });
+  }
 
-  console.log(`✅ Career seeded: ${career.length} careers`);
+  console.log(`✅ Career seeded: ${CAREERS.length} careers`);
 }

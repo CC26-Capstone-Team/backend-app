@@ -16,6 +16,7 @@ async function main() {
   await seedCareer();
   await careerSkillSeeder();
   await seedRecommendation();
+  await seedJobOpenings();
 }
 
 main()
