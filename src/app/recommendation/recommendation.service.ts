@@ -206,7 +206,7 @@ async function fetchJobsFromSerpApi(targetCareer: string): Promise<any[]> {
   });
 }
 
-export async function generateJobRecommendation(userId: string, targetCareer: string) {
+export async function generateJobRecommendation(userId: string, targetCareer: string, forceRefresh: boolean = false) {
   const careerData = await prisma.career.findUnique({
     where: { title: targetCareer },
     select: { id: true },
@@ -224,7 +224,7 @@ export async function generateJobRecommendation(userId: string, targetCareer: st
     include: { jobs: true },
   });
 
-  if (existingJobRec) {
+  if (existingJobRec && !forceRefresh) {
     const now = new Date();
     const lastFeched = new Date(existingJobRec.last_fetched_at);
     const diffInDays = (now.getTime() - lastFeched.getTime()) / (1000 * 60 * 60 * 24);
