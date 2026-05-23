@@ -154,7 +154,9 @@ export async function generateCourseRecommendation(userId: string, targetCareer:
     },
   });
 
-  const parsedData = JSON.parse(response.text as string) as AIRecommendationResult;
+  let textResponse = response.text as string;
+  textResponse = textResponse.replace(/^```json\n?/, "").replace(/\n?```$/, "").trim();
+  const parsedData = JSON.parse(textResponse) as AIRecommendationResult;
 
   let savedRecommendation;
 
@@ -311,7 +313,9 @@ export async function generateJobRecommendation(userId: string, targetCareer: st
     },
   });
 
-  const parsedData = JSON.parse(response.text as string);
+  let textResponse = response.text as string;
+  textResponse = textResponse.replace(/^```json\n?/, "").replace(/\n?```$/, "").trim();
+  const parsedData = JSON.parse(textResponse);
 
   let savedRecommendation;
 
@@ -324,15 +328,15 @@ export async function generateJobRecommendation(userId: string, targetCareer: st
         jobs: {
           deleteMany: {}, // Hapus lowongan lama
           create: parsedData.jobs.map((job: any, index: number) => ({
-            title: job.title,
-            company_name: job.company_name,
-            location: job.location,
-            via: job.via,
-            description: jobsDataForAI[index]?.description, // Kembalikan deskripsi asli dari SerpApi
-            apply_link: jobsDataForAI[index]?.apply_link, // Kembalikan link asli
-            posted_at: jobsDataForAI[index]?.posted_at,
-            match_score: job.match_score,
-            match_reason: job.match_reason,
+            title: job.title || jobsDataForAI[index]?.title || "Posisi tidak diketahui",
+            company_name: job.company_name || jobsDataForAI[index]?.company_name || "Tidak diketahui",
+            location: job.location || jobsDataForAI[index]?.location || "Tidak diketahui",
+            via: job.via || jobsDataForAI[index]?.via || "Tidak diketahui",
+            description: jobsDataForAI[index]?.description || "Tidak ada deskripsi",
+            apply_link: jobsDataForAI[index]?.apply_link || "",
+            posted_at: jobsDataForAI[index]?.posted_at || null,
+            match_score: typeof job.match_score === 'number' ? job.match_score : parseInt(job.match_score) || 0,
+            match_reason: String(job.match_reason || "Tidak ada alasan spesifik"),
           })),
         },
       },
@@ -346,14 +350,15 @@ export async function generateJobRecommendation(userId: string, targetCareer: st
         analysis: parsedData.analysis,
         jobs: {
           create: parsedData.jobs.map((job: any, index: number) => ({
-            title: job.title,
-            company_name: job.company_name,
-            location: job.location,
-            via: job.via,
-            description: jobsDataForAI[index]?.description,
-            apply_link: jobsDataForAI[index]?.apply_link,
-            match_score: job.match_score,
-            match_reason: job.match_reason,
+            title: job.title || jobsDataForAI[index]?.title || "Posisi tidak diketahui",
+            company_name: job.company_name || jobsDataForAI[index]?.company_name || "Tidak diketahui",
+            location: job.location || jobsDataForAI[index]?.location || "Tidak diketahui",
+            via: job.via || jobsDataForAI[index]?.via || "Tidak diketahui",
+            description: jobsDataForAI[index]?.description || "Tidak ada deskripsi",
+            apply_link: jobsDataForAI[index]?.apply_link || "",
+            posted_at: jobsDataForAI[index]?.posted_at || null,
+            match_score: typeof job.match_score === 'number' ? job.match_score : parseInt(job.match_score) || 0,
+            match_reason: String(job.match_reason || "Tidak ada alasan spesifik"),
           })),
         },
       },
