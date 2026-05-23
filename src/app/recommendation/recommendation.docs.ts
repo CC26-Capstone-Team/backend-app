@@ -78,29 +78,23 @@ export const userRecommendationsPaths: ZodOpenApiPathsObject = {
       },
     },
   },
-  "/api/recommendations/course": {
-    post: {
+  "/api/recommendations/course/{target_career}": {
+    get: {
       tags: ["Recommendations"],
       summary: "Generate rekomendasi kursus berbasis AI berdasarkan target karir",
       security: [{ cookieAuth: [] }],
-      requestBody: {
-        required: true,
-        content: {
-          "application/json": {
-            schema: {
-              type: "object",
-              properties: {
-                target_career: {
-                  type: "string",
-                  example: "Backend Developer",
-                  description: "Karir spesifik yang ingin dituju oleh user",
-                },
-              },
-              required: ["target_career"],
-            },
+      parameters: [
+        {
+          name: "target_career",
+          in: "path",
+          required: true,
+          description: "Karir spesifik yang ingin dituju oleh user",
+          schema: {
+            type: "string",
+            example: "Backend Developer",
           },
         },
-      },
+      ],
       responses: {
         200: {
           description: "Course recommendations generated successfully",
