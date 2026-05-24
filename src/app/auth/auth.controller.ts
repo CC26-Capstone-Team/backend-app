@@ -3,8 +3,7 @@ import {
   registerUser,
   loginUser,
   logoutUser,
-  registerWithGoogle,
-  loginWithGoogle,
+  handleGoogleAuth,
 } from "./auth.service.js";
 import { sendResponse } from "../../lib/response.js";
 import { verifyToken } from "../../lib/jwt.js";
@@ -25,17 +24,6 @@ export async function register(req: Request, res: Response, next: NextFunction) 
     const { user, token } = await registerUser(name, email, password);
     setCookie(res, token);
     sendResponse(res, 201, STATUS.SUCCESS, "Register successful", "user", { ...user, token });
-  } catch (error) {
-    next(error);
-  }
-}
-
-export async function registerGoogle(req: Request, res: Response, next: NextFunction) {
-  const { googleId, email, avatarUrl } = req.body;
-
-  try {
-    const user = await registerWithGoogle(googleId, email, avatarUrl);
-    sendResponse(res, 201, STATUS.SUCCESS, "Register successful", "user", user);
   } catch (error) {
     next(error);
   }
@@ -66,12 +54,12 @@ export async function login(req: Request, res: Response, next: NextFunction) {
 }
 
 export async function loginGoogle(req: Request, res: Response, next: NextFunction) {
-  const { googleId } = req.body;
+  const { token } = req.body;
 
   try {
-    const { user, token } = await loginWithGoogle(googleId);
-    setCookie(res, token);
-    sendResponse(res, 200, STATUS.SUCCESS, "Login successful", "user", { ...user, token });
+    const { user, token: appToken } = await handleGoogleAuth(token)
+    setCookie(res, appToken);
+    sendResponse(res, 200, STATUS.SUCCESS, "Login successful", "user", { ...user, token: appToken });
   } catch (error) {
     next(error);
   }

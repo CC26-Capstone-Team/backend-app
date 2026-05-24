@@ -3,6 +3,9 @@ import { prisma } from "../../lib/prisma.js";
 import { signToken } from "../../lib/jwt.js";
 import { AppError } from "../../lib/error.js";
 import { isOnboarded } from "./auth.helper.js";
+import { OAuth2Client } from "google-auth-library";
+
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID as string);
 
 /**
  * Registers a new user.
@@ -30,25 +33,6 @@ export async function registerUser(username: string, email: string, password: st
   });
 
   return { user: { id: user.id, email: user.email, is_onboarded: false }, token };
-}
-
-export async function registerWithGoogle(googleId: string, email: string, avatarUrl?: string) {
-  const existing = await prisma.user.findUnique({ where: { google_id: googleId } });
-  if (existing) throw new AppError(409, "Email already registered");
-
-  const baseUsername = email.split("@")[0];
-  const username = `${baseUsername}_${Math.random().toString(36).slice(2, 7)}`;
-
-  const user = await prisma.user.create({
-    data: {
-      google_id: googleId,
-      email,
-      username: username,
-      avatar_url: avatarUrl ?? null,
-    },
-  });
-
-  return { id: user.id, email: user.email };
 }
 
 /**
@@ -80,20 +64,70 @@ export async function loginUser(email: string, password: string) {
   return { user: { id: user.id, email: user.email, is_onboarded: onboarded }, token };
 }
 
-export async function loginWithGoogle(googleId: string) {
-  const user = await prisma.user.findUnique({ where: { google_id: googleId } });
-  if (!user) throw new AppError(401, "Google account not registered");
+/**
+ * Unified Google Authentication (Login & Auto-Register)
+ */
+export async function handleGoogleAuth(googleToken: string) {
+  // 1. VERIFIKASI KE GOOGLE (Ini yang bikin aman!)
+  const ticket = await googleClient.verifyIdToken({
+    idToken: googleToken,
+    audience: process.env.GOOGLE_CLIENT_ID as string,
+  });
 
-  const token = signToken({ id: user.id, email: user.email });
+  const payload = ticket.getPayload();
+  if (!payload || !payload.email) {
+    throw new AppError(401, "Token Google tidak valid atau tidak memiliki email.");
+  }
+
+  // DEKLARASI EKSPLISIT untuk memuaskan TypeScript & Prisma
+  const email = payload.email as string;
+  const googleId = payload.sub as string;
+  const name = payload.name;
+  const picture = payload.picture;
+
+  // 2. CEK DATABASE (Apakah email atau google_id ini sudah ada?)
+  let user = await prisma.user.findFirst({
+    where: {
+      OR: [{ google_id: googleId }, { email: email }],
+    },
+  });
+
+  if (!user) {
+    // 3A. JIKA BELUM ADA = REGISTER OTOMATIS
+    user = await prisma.user.create({
+      data: {
+        google_id: googleId,
+        email: email,
+        username: name || email.split("@")[0] || "User",
+        avatar_url: picture ?? null,
+      },
+    });
+  } else if (!user.google_id) {
+    // 3B. JIKA EMAIL SUDAH ADA (Daftar manual sebelumnya), TAPI BELUM ADA GOOGLE ID
+    // Kita "tautkan" akun lamanya dengan Google ID ini
+    user = await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        google_id: googleId,
+        avatar_url: user.avatar_url || picture || null,
+      },
+    });
+  }
+
+  // 4. PROSES LOGIN KEDUA SKENARIO (Buatkan Token Sistem Anda)
+  const appToken = signToken({ id: user.id, email: user.email });
 
   await prisma.user.update({
     where: { id: user.id },
-    data: { token, last_login: new Date() },
+    data: { token: appToken, last_login: new Date() },
   });
 
   const onboarded = await isOnboarded(user.id);
 
-  return { user: { id: user.id, email: user.email, is_onboarded: onboarded }, token };
+  return {
+    user: { id: user.id, email: user.email, is_onboarded: onboarded },
+    token: appToken,
+  };
 }
 
 /**

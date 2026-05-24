@@ -12,7 +12,5 @@ export const loginSchema = z.object({
 });
 
 export const googleAuthSchema = z.object({
-  googleId: z.string(),
-  email: z.email().max(255),
-  avatarUrl: z.string().url().optional(),
+  token: z.string()
 });

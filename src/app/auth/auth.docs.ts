@@ -23,29 +23,6 @@ export const authPaths: ZodOpenApiPathsObject = {
       },
     },
   },
-  "/api/auth/register/google": {
-    post: {
-      tags: ["Auth"],
-      summary: "Registrasi user dengan Google",
-      requestBody: {
-        required: true,
-        content: {
-          "application/json": {
-            schema: googleAuthSchema,
-            example: {
-              googleId: "1234567890",
-              email: "user@gmail.com",
-              avatarUrl: "https://example.com/avatar.jpg",
-            },
-          },
-        },
-      },
-      responses: {
-        201: { description: "Register successful" },
-        409: { description: "Google account already registered" },
-      },
-    },
-  },
   "/api/auth/login": {
     post: {
       tags: ["Auth"],
@@ -66,7 +43,7 @@ export const authPaths: ZodOpenApiPathsObject = {
       },
     },
   },
-  "/api/auth/login/google": {
+  "/api/auth/google": {
     post: {
       tags: ["Auth"],
       summary: "Login dengan Google",
@@ -74,8 +51,8 @@ export const authPaths: ZodOpenApiPathsObject = {
         required: true,
         content: {
           "application/json": {
-            schema: z.object({ googleId: z.string() }),
-            example: { googleId: "1234567890" },
+            schema: z.object({ token: z.string() }),
+            example: { token: "1234567890" },
           },
         },
       },
