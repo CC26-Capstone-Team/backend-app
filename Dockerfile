@@ -8,7 +8,7 @@ COPY package*.json pnpm-lock.yaml ./
 
 COPY prisma ./prisma/
 
-RUN pnpm install --frozen-lockfile --ignore-scripts
+RUN pnpm install --frozen-lockfile --ignore-scripts && pnpm store prune
 
 RUN pnpm db:generate
 
@@ -16,7 +16,6 @@ COPY . .
 
 RUN pnpm build
 
-EXPOSE 5000
+EXPOSE 4000
 
-# CMD ['pnpm', 'start']A
 CMD pnpm start
