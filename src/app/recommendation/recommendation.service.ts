@@ -2,7 +2,7 @@ import { GoogleGenAI } from "@google/genai";
 import { getJson } from "serpapi";
 import { AppError } from "../../lib/error.js";
 import { prisma } from "../../lib/prisma.js";
-import type { AIRecommendationResult } from "./recommendation.types.js";
+import type { AIJobRecommendationResponse, AIJobResult, AIRecommendationResult, SerpApiJob } from "./recommendation.types.js";
 import { AIJobResponseSchema, AIResponseSchema } from "./recommendation.schema.js";
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
@@ -205,7 +205,7 @@ export async function generateCourseRecommendation(userId: string, targetCareer:
   return savedRecommendation;
 }
 
-async function fetchJobsFromSerpApi(targetCareer: string): Promise<any[]> {
+async function fetchJobsFromSerpApi(targetCareer: string): Promise<SerpApiJob[]> {
   return new Promise((resolve, reject) => {
     getJson(
       {
@@ -215,7 +215,7 @@ async function fetchJobsFromSerpApi(targetCareer: string): Promise<any[]> {
         gl: "id",
         api_key: process.env.SERPAPI_API_KEY,
       },
-      (json: any) => {
+      (json) => {
         if (json.error) {
           if (json.error.includes("Google hasn't returned any results")) {
             resolve([]);
@@ -315,7 +315,7 @@ export async function generateJobRecommendation(userId: string, targetCareer: st
 
   let textResponse = response.text as string;
   textResponse = textResponse.replace(/^```json\n?/, "").replace(/\n?```$/, "").trim();
-  const parsedData = JSON.parse(textResponse);
+  const parsedData = JSON.parse(textResponse) as AIJobRecommendationResponse
 
   let savedRecommendation;
 
@@ -327,7 +327,7 @@ export async function generateJobRecommendation(userId: string, targetCareer: st
         last_fetched_at: new Date(), // Reset timer 2 hari
         jobs: {
           deleteMany: {}, // Hapus lowongan lama
-          create: parsedData.jobs.map((job: any, index: number) => ({
+          create: parsedData.jobs.map((job: AIJobResult, index: number) => ({
             title: job.title || jobsDataForAI[index]?.title || "Posisi tidak diketahui",
             company_name: job.company_name || jobsDataForAI[index]?.company_name || "Tidak diketahui",
             location: job.location || jobsDataForAI[index]?.location || "Tidak diketahui",
@@ -349,7 +349,7 @@ export async function generateJobRecommendation(userId: string, targetCareer: st
         career_id: careerData.id,
         analysis: parsedData.analysis,
         jobs: {
-          create: parsedData.jobs.map((job: any, index: number) => ({
+          create: parsedData.jobs.map((job: AIJobResult, index: number) => ({
             title: job.title || jobsDataForAI[index]?.title || "Posisi tidak diketahui",
             company_name: job.company_name || jobsDataForAI[index]?.company_name || "Tidak diketahui",
             location: job.location || jobsDataForAI[index]?.location || "Tidak diketahui",
