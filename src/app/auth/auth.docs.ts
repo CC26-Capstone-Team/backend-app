@@ -1,5 +1,5 @@
 import type { ZodOpenApiPathsObject } from "zod-openapi";
-import { registerSchema, loginSchema, googleAuthSchema } from "./auth.schema.js";
+import { registerSchema, loginSchema } from "./auth.schema.js";
 import z from "zod";
 
 export const authPaths: ZodOpenApiPathsObject = {
