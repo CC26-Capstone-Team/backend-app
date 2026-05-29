@@ -4,7 +4,8 @@ import profileRoutes from "./profile/profile.routes.js";
 import skillRoutes from "./skill/skill.route.js";
 import onboardingRoutes from "./onboarding/onboarding.route.js";
 import recommendationsRoutes from "./recommendation/recommendation.route.js";
-// import jobRoutes from "./job/job.route.js";
+import predictionRoutes from "./prediction/prediction.route.js";
+import metadataRoute from "./metadata/metadata.route.js";
 
 const router: IRouter = Router();
 
@@ -13,6 +14,7 @@ router.use("/user", profileRoutes);
 router.use("/skills", skillRoutes);
 router.use("/onboarding", onboardingRoutes);
 router.use("/recommendations", recommendationsRoutes);
-// router.use("/jobs", jobRoutes);
+router.use("/predictions", predictionRoutes);
+router.use("/metadata", metadataRoute);
 
 export default router;

@@ -76,6 +76,7 @@ export async function seedSkills() {
     "Stakeholder Management",
     "Statistics",
     "Supply Chain",
+    "System Design",
     "Tableau",
     "Talent Acquisition",
     "TensorFlow",
