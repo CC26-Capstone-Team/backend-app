@@ -10,6 +10,10 @@ import { notFoundHandler } from "./middleware/notfound.middleware.js";
 import { requestLogger } from "./middleware/logger.middleware.js";
 import { setupSwagger } from "./lib/swagger.js";
 import { STATUS } from "./lib/constant.js";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const app: Application = express();
 
@@ -19,10 +23,13 @@ app.use(
     credentials: true,
   })
 );
-app.use(helmet());
+app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
 app.use(cookieParser());
 app.use(express.json());
 app.use(requestLogger);
+
+// Serve static uploaded files
+app.use("/uploads", express.static(path.resolve(__dirname, "../uploads")));
 
 app.get("/", (_req: Request, res: Response) => {
   sendResponse(res, 200, STATUS.SUCCESS, "Backend Capstone API is Healthy! 🚀");

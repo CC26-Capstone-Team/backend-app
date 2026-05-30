@@ -1,5 +1,7 @@
 import { AppError } from "../../lib/error.js";
 import { prisma } from "../../lib/prisma.js";
+import fs from "fs";
+import path from "path";
 
 export async function userProfile(userId: string) {
   const user = await prisma.user.findUnique({
@@ -116,4 +118,28 @@ export async function editUserSkill(user_id: string, skill_ids: string[]) {
   ]);
 
   return userSkill;
+}
+
+export async function uploadUserAvatar(userId: string, filePath: string, baseUrl: string) {
+  // Ambil nama file saja (bukan path absolut) untuk konstruksi URL yang benar
+  const filename = path.basename(filePath);
+  const avatarUrl = `${baseUrl}/uploads/avatars/${filename}`;
+
+  // Hapus avatar lama jika bukan URL eksternal (Google, dll)
+  const user = await prisma.user.findUnique({ where: { id: userId }, select: { avatar_url: true } });
+  if (user?.avatar_url && user.avatar_url.startsWith(baseUrl) && user.avatar_url.includes("/uploads/avatars/")) {
+    const oldFilename = user.avatar_url.split("/uploads/avatars/")[1];
+    if (oldFilename) {
+      const oldFile = path.resolve("uploads", "avatars", oldFilename);
+      if (fs.existsSync(oldFile)) fs.unlinkSync(oldFile);
+    }
+  }
+
+  const updated = await prisma.user.update({
+    where: { id: userId },
+    data: { avatar_url: avatarUrl },
+    select: { id: true, avatar_url: true },
+  });
+
+  return updated;
 }
