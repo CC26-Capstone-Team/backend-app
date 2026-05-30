@@ -10,9 +10,9 @@ COPY prisma ./prisma/
 
 RUN pnpm install --frozen-lockfile --ignore-scripts && pnpm store prune
 
-RUN pnpm db:generate
-
 COPY . .
+
+RUN pnpm db:generate
 
 RUN pnpm build
 
