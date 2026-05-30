@@ -5,6 +5,7 @@ import {
   editUserSkill,
   getUserSkillProfile,
   userProfile,
+  uploadUserAvatar,
 } from "./profile.service.js";
 import { sendResponse } from "../../lib/response.js";
 import { STATUS } from "../../lib/constant.js";
@@ -65,6 +66,23 @@ export async function updateUserSkill(req: Request, res: Response, next: NextFun
   try {
     const profile = await editUserSkill(userId, skill_ids);
     sendResponse(res, 200, STATUS.SUCCESS, "Skill Updated", "profile", profile);
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function uploadAvatar(req: Request, res: Response, next: NextFunction) {
+  const userId = req.user!.id;
+
+  try {
+    if (!req.file) {
+      res.status(400).json({ status: "error", message: "Tidak ada file yang diupload." });
+      return;
+    }
+
+    const baseUrl = `${req.protocol}://${req.get("host")}`;
+    const result = await uploadUserAvatar(userId, req.file.path, baseUrl);
+    sendResponse(res, 200, STATUS.SUCCESS, "Avatar berhasil diperbarui", "user", result);
   } catch (error) {
     next(error);
   }
