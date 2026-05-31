@@ -6,7 +6,7 @@ const COOKIE_MAX_AGE = 7 * 24 * 60 * 60 * 1000;
 const cookieOptions = {
   httpOnly: true,
   secure: process.env.NODE_ENV === "production",
-  sameSite: "strict" as const,
+  sameSite: "none" as const,
   maxAge: COOKIE_MAX_AGE,
 };
 
@@ -26,5 +26,9 @@ export function setCookie(res: Response, token: string) {
  * @param res - The Express response object
  */
 export function clearCookie(res: Response) {
-  res.clearCookie(COOKIE_NAME);
+  const { maxAge, ...clearOptions } = cookieOptions;
+
+  void maxAge;
+
+  res.clearCookie(COOKIE_NAME, clearOptions);
 }
