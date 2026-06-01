@@ -21,6 +21,7 @@ services:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
+      FRONTEND_URL: ${FRONTEND_URL}
     ports:
       - "5432:5432" # Membuka port agar bisa dicek lewat DBeaver/pgAdmin dari host
     volumes:
