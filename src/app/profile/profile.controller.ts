@@ -80,8 +80,7 @@ export async function uploadAvatar(req: Request, res: Response, next: NextFuncti
       return;
     }
 
-    const baseUrl = `${req.protocol}://${req.get("host")}`;
-    const result = await uploadUserAvatar(userId, req.file.path, baseUrl);
+    const result = await uploadUserAvatar(userId, req.file.path);
     sendResponse(res, 200, STATUS.SUCCESS, "Avatar berhasil diperbarui", "user", result);
   } catch (error) {
     next(error);

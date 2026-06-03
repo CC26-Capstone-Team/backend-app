@@ -17,6 +17,9 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const app: Application = express();
 
+// Trust reverse proxy (Nginx) agar req.protocol mengembalikan "https"
+app.set("trust proxy", 1);
+
 app.use(
   cors({
     origin: process.env.FRONTEND_URL ?? "http://localhost:3000",
@@ -29,7 +32,8 @@ app.use(express.json());
 app.use(requestLogger);
 
 // Serve static uploaded files
-app.use("/uploads", express.static(path.resolve(__dirname, "../uploads")));
+// Gunakan process.cwd() agar path selalu ke root project, bukan ke folder dist
+app.use("/uploads", express.static(path.resolve(process.cwd(), "uploads")));
 
 app.get("/", (_req: Request, res: Response) => {
   sendResponse(res, 200, STATUS.SUCCESS, "Backend Capstone API is Healthy! 🚀");
